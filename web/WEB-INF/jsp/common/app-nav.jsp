@@ -36,7 +36,6 @@
         <a href="#">&#128197; Attendance</a>
         <a href="<%= ctx %>/ApplyLeaveServlet">&#127958; Apply Leave</a>
         <a href="<%= ctx %>/LeaveHistoryServlet">&#128203; Leave History</a>
-        <a href="#">&#128221; Permission</a>
         <a href="<%= ctx %>/ProfileServlet">&#128100; My Profile</a>
     <% } else if (navRole == Role.HR) { %>
         <a href="<%= ctx %>/hrDashboard.jsp">&#127968; HR Dashboard</a>
