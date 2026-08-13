@@ -1,0 +1,59 @@
+# Compiled class files
+*.class
+
+# Package files
+*.jar
+*.war
+*.ear
+*.zip
+
+# NetBeans IDE
+nbproject/
+build/
+dist/
+nbbuild/
+nbdist/
+.nb-gradle/
+
+# IDE files
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+
+# Maven
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+
+# Gradle
+.gradle/
+gradle/
+
+# Eclipse
+.classpath
+.project
+.settings/
+
+# IntelliJ
+out/
+
+# Generated files
+.ant-targets-build-impl.xml
+build-impl.xml
+
+# Temp files
+*.tmp
+*.bak
+*.log
