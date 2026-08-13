@@ -1,6 +1,10 @@
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@ page import="com.nimbus.admin.model.Employee" %>
+<%@ page import="com.nimbus.admin.leave.model.Leave" %>
+<%@ page import="com.nimbus.admin.leave.model.LeaveBalance" %>
+<%@ page import="java.time.format.DateTimeFormatter" %>
+<%@ page import="java.util.List" %>
 
 <%
     // Get the logged-in employee from the session
@@ -13,6 +17,10 @@
         response.sendRedirect("login.html");
         return;
     }
+
+    LeaveBalance leaveBalance = (LeaveBalance) request.getAttribute("leaveBalance");
+    List<Leave> recentLeaves = (List<Leave>) request.getAttribute("recentLeaves");
+    DateTimeFormatter leaveDateFmt = DateTimeFormatter.ofPattern("dd MMM");
 %>
 
 <!DOCTYPE html>
@@ -26,7 +34,7 @@
           content="width=device-width, initial-scale=1.0">
 
     <title>Employee Dashboard</title>
-
+    <%@ include file="/WEB-INF/jsp/common/nav-styles.jsp" %>
     <style>
 
         * {
@@ -40,128 +48,11 @@
             background-color: #f2f4f7;
         }
 
-        /* Top navigation */
-
-        .navbar {
-            background-color: #222;
-            color: white;
-
-            padding: 18px 30px;
-
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .navbar h2 {
-            font-size: 22px;
-        }
-
-        .logout-button {
-            background-color: #e74c3c;
-            color: white;
-
-            padding: 9px 16px;
-
-            border: none;
-            border-radius: 5px;
-
-            text-decoration: none;
-        }
-
-        .logout-button:hover {
-            background-color: #c0392b;
-        }
-
-        
-
-        /* Collapsible Sidebar  */
-        .sidebar{
-            position: fixed;
-            top: 70px;
-            left: 0;
-            width:230px;
-            height: calc(100vh - 70px);
-            
-            background-color : #ffffff;
-            border-right: 1px solid #ddd;
-            padding: 25px 15px;
-            
-            transform: translate(-100%);
-            transition: transform 0.3s ease;
-            
-            z-index: 1000;
-            
-        }
-        /* Sidebar OPEN */
-
-        .sidebar.open {
-            transform: translateX(0);
-        }
-
-        .sidebar-title{
-            font-size:13px;
-            color: #888;
-            
-            text-transform: uppercase;
-            margin-bottom:15px;
-            padding-left: 12px;
-        }
-        
-        
-        .sidebar a{
-            display: flex;
-            align-items: center;
-            gap:12px;
-            padding: 14px 12px;
-            
-            margin-bottom: 6px;
-            border-radius: 7px;
-            text-decoration: none;
-            color: #333;
-            font-size: 15px;
-            transition: 0.2s;
-        }
-        
-        .sidebar a:hover {
-        background-color: #f0f2f5;
-    }
-
-    
-         /* Menu Button */
-         .menu-button {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 27px;
-            cursor: pointer;
-            margin-right: 15px;
-            padding: 5px 8px;
-            }
-
-         .menu-button:hover {
-            opacity: 0.8;
-          }
-          
-          /* NAVBAR LEFT SECTION */
-
-            .navbar-left {
-                display: flex;
-                align-items: center;
-            }
-          
-         /* Main dashboard */
+        /* Main dashboard */
         .dashboard {
-            margin-left: 0;
             padding: 30px;
-            transition: margin-left 0.3s ease;
         }
-        
-        /* Move dashboard when sidebar opens */
-        .dashboard.sidebar-open {
-             margin-left: 230px;
-            }
-            
+
         .welcome {
             margin-bottom: 30px;
         }
@@ -233,6 +124,115 @@
             box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18);
         }
         
+        .leave-section {
+            background-color: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+            margin-bottom: 25px;
+        }
+
+        .leave-section h2 {
+            font-size: 20px;
+            margin-bottom: 6px;
+            color: #222;
+        }
+
+        .leave-section .section-description {
+            color: #777;
+            font-size: 13px;
+            margin-bottom: 20px;
+        }
+
+        .leave-balance {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 22px;
+        }
+
+        .leave-balance-item {
+            background: #fafbfc;
+            border: 1px solid #eceff3;
+            border-radius: 8px;
+            padding: 16px;
+        }
+
+        .leave-balance-item .label {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .leave-balance-item .value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #222;
+        }
+
+        .leave-request-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .leave-request-item {
+            border: 1px solid #eceff3;
+            border-radius: 8px;
+            padding: 14px 16px;
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            align-items: center;
+        }
+
+        .leave-request-item .title {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .leave-request-item .meta {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .leave-status {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .leave-status-SUBMITTED { background: #e8f1ff; color: #1f5fbf; }
+        .leave-status-UNDER_REVIEW { background: #fff4d6; color: #9a6b00; }
+        .leave-status-APPROVED { background: #e7f7ec; color: #1f7a3f; }
+        .leave-status-REJECTED { background: #fdecea; color: #b42318; }
+        .leave-status-CANCELLED { background: #f1f3f5; color: #5f6368; }
+
+        .leave-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .leave-button {
+            display: inline-block;
+            padding: 10px 16px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 14px;
+            background: #222;
+            color: white;
+        }
+
+        .leave-button.secondary {
+            background: #e9ecef;
+            color: #333;
+        }
+
         
         /* chart section */
         
@@ -369,49 +369,9 @@
     </style>
 </head>
 <body>
+    <%@ include file="/WEB-INF/jsp/common/app-nav.jsp" %>
 
-    <!-- Navigation Bar -->
-    <div class="navbar">
-        <div class="navbar-left">
-            <button class="menu-button" onclick="toggleSidebar()">
-                 ☰
-            </button>
-                <h2>Employee Attendance System</h2>
-        </div> 
-        <a href="LogoutServlet" class="logout-button">
-            Logout
-        </a>
-
-    </div>
-    
-    <!-- SideBar -->
-       <div class="sidebar" id="sidebar">
-                <div class="sidebar-title">
-                    Employee Menu
-                </div>
-                
-            <a href="#">
-
-                <h3>📅 Attendance</h3>
-            </a>
-                
-            <a href="#">
-
-                <h3>🏖  Leave</h3>
-            </a>
-                
-            <a href="#">
-
-                <h3>📝 Permission</h3>
-            </a>    
-                
-            <a href="ProfileServlet">
-
-                <h3>👤 My Profile</h3>
-            </a>      
-        </div>
-
-    <!-- Dashboard -->
+    <div class="page-content">
     <div class="dashboard">
         <!-- Welcome message -->
         <div class="welcome">
@@ -422,6 +382,58 @@
                 Here's today's attendance overview.
             </p>
         </div>
+            
+            <div class="leave-section">
+                <h2>My Leave</h2>
+                <p class="section-description">Your current leave balance and recent requests.</p>
+
+                <% if (leaveBalance != null) { %>
+                    <div class="leave-balance">
+                        <div class="leave-balance-item">
+                            <div class="label">Available</div>
+                            <div class="value"><%= leaveBalance.getAvailable() %></div>
+                        </div>
+                        <div class="leave-balance-item">
+                            <div class="label">Used</div>
+                            <div class="value"><%= leaveBalance.getUsed() %></div>
+                        </div>
+                        <div class="leave-balance-item">
+                            <div class="label">Pending</div>
+                            <div class="value"><%= leaveBalance.getPending() %></div>
+                        </div>
+                    </div>
+                <% } else { %>
+                    <p class="section-description">Open the dashboard through EmployeeDashboardServlet to load leave balance.</p>
+                <% } %>
+
+                <div class="leave-request-list">
+                    <% if (recentLeaves != null && !recentLeaves.isEmpty()) { %>
+                        <% for (Leave leave : recentLeaves) { %>
+                            <div class="leave-request-item">
+                                <div>
+                                    <div class="title"><%= leave.getLeaveType().getDisplayName() %></div>
+                                    <div class="meta">
+                                        <%= leave.getFromDate().format(leaveDateFmt) %>
+                                        <% if (!leave.getFromDate().equals(leave.getToDate())) { %>
+                                            - <%= leave.getToDate().format(leaveDateFmt) %>
+                                        <% } %>
+                                    </div>
+                                </div>
+                                <span class="leave-status leave-status-<%= leave.getStatus().name() %>">
+                                    <%= leave.getStatus().getDisplayName() %>
+                                </span>
+                            </div>
+                        <% } %>
+                    <% } else { %>
+                        <div class="meta">No recent leave requests yet.</div>
+                    <% } %>
+                </div>
+
+                <div class="leave-actions">
+                    <a class="leave-button" href="ApplyLeaveServlet">Apply for Leave</a>
+                    <a class="leave-button secondary" href="LeaveHistoryServlet">View Leave History</a>
+                </div>
+            </div>
             
             <!-- Summary Cards -->
             
@@ -675,16 +687,6 @@
                 </div>
             </div>        
     </div>
-            
-    <script>
-      function toggleSidebar() {
-
-         const sidebar = document.getElementById("sidebar");
-         const dashboard = document.querySelector(".dashboard");
-
-         sidebar.classList.toggle("open");
-         dashboard.classList.toggle("sidebar-open");
-     }
-    </script>          
+    </div>
 </body>
 </html>

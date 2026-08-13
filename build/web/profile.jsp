@@ -15,6 +15,7 @@
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <title>Employee Profile</title>
+        <%@ include file="/WEB-INF/jsp/common/nav-styles.jsp" %>
     </head>
     <style>
     * {
@@ -151,8 +152,9 @@
 </style>
 
 <body>
-
-    <div class="profile-container">
+    <%@ include file="/WEB-INF/jsp/common/app-nav.jsp" %>
+    <div class="page-content">
+        <div class="profile-container">
 
         <div class="profile-header">
             <h1>My Profile</h1>
@@ -229,4 +231,5 @@
 
     </div>
 
+    </div>
 </body>

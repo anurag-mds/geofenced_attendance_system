@@ -24,7 +24,7 @@
         <% if (navEmployee != null) { %>
             <span class="user-name"><%= navEmployee.getFullName() %></span>
         <% } %>
-        <a href="<%= ctx %>/LogoutServlet" class="app-logout-button">Logout</a>
+        <a href="<%= ctx %>/LogoutServlet" class="app-logout-button" onclick="return confirm('Are you sure you want to logout?');">Logout</a>
     </div>
 </nav>
 
