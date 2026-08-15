@@ -54,18 +54,22 @@ public class LoginServlet extends HttpServlet {
             session.setAttribute("employee", employee);
 
             // Check the employee's role
-            if (employee.getRole() == Role.ADMIN) {
+           // Check the employee's role
+if (employee.getRole() == Role.ADMIN) {
 
-                response.sendRedirect("adminDashboard.jsp");
+    response.sendRedirect("adminDashboard.jsp");
 
-            } else if (employee.getRole() == Role.HR) {
+} else if (employee.getRole() == Role.HR) {
 
-                response.sendRedirect("hrDashboard.jsp");
+    response.sendRedirect(
+        request.getContextPath() + "/HrDashboardServlet"
+    );
 
-            } else if (employee.getRole() == Role.EMPLOYEE) {
+} else if (employee.getRole() == Role.EMPLOYEE) {
 
-                response.sendRedirect("EmployeeDashboardServlet");
-            }
+    response.sendRedirect("EmployeeDashboardServlet");
+
+}
 
         } else {
 
