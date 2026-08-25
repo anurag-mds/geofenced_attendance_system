@@ -1,27 +1,70 @@
-<%-- Shared hamburger navbar and role-based sidebar for authenticated pages. --%>
+<%-- Shared navbar and role-based sidebar for authenticated pages. --%>
+
 <%@ page import="com.nimbus.admin.model.Employee" %>
 <%@ page import="com.nimbus.admin.model.Role" %>
-
+<%@ page import="com.nimbus.admin.dao.NotificationDAO" %>
+<%@ page import="java.sql.SQLException" %>
 <%
-    Employee navEmployee = (Employee) session.getAttribute("employee");
+    Employee navEmployee =
+            (Employee) session.getAttribute("employee");
 
-    String ctx = request.getContextPath();
+    String ctx =
+            request.getContextPath();
 
-    Role navRole = navEmployee != null
-            ? navEmployee.getRole()
-            : null;
+    Role navRole =
+            navEmployee != null
+                    ? navEmployee.getRole()
+                    : null;
 
     String menuTitle = "Menu";
 
+
     if (navRole == Role.EMPLOYEE) {
+
         menuTitle = "Employee Menu";
+
     } else if (navRole == Role.HR) {
+
         menuTitle = "HR Menu";
+
     } else if (navRole == Role.ADMIN) {
+
         menuTitle = "Admin Menu";
+    }
+
+
+   /*
+     * =========================================================
+     * UNREAD NOTIFICATION COUNT
+     * =========================================================
+     */
+
+    int navUnreadCount = 0;
+
+    if (navEmployee != null) {
+
+        try {
+
+            NotificationDAO notificationDAO =
+                    new NotificationDAO();
+
+            navUnreadCount =
+                    notificationDAO.getUnreadCount(
+                            navEmployee.getEmpId()
+                    );
+
+        } catch (SQLException e) {
+
+            navUnreadCount = 0;
+
+            e.printStackTrace();
+        }
     }
 %>
 
+<!-- =========================================================
+     TOP NAVBAR
+     ========================================================= -->
 
 <nav class="app-navbar">
 
@@ -31,7 +74,9 @@
                 class="app-menu-button"
                 onclick="toggleAppSidebar()"
                 aria-label="Open navigation menu">
+
             &#9776;
+
         </button>
 
         <h2>Employee Attendance System</h2>
@@ -43,14 +88,44 @@
 
         <% if (navEmployee != null) { %>
 
+            <!-- Employee name -->
+
             <span class="user-name">
                 <%= navEmployee.getFullName() %>
             </span>
 
+
+            <!-- Notifications -->
+
+         <!-- Notifications -->
+
+<a href="<%= ctx %>/NotificationServlet"
+   class="notification-button"
+   title="Notifications"
+   aria-label="Notifications">
+
+    <span class="notification-icon">
+        &#128276;
+    </span>
+
+    <% if (navUnreadCount > 0) { %>
+
+        <span class="notification-badge">
+            <%= navUnreadCount > 99 ? "99+" : navUnreadCount %>
+        </span>
+
+    <% } %>
+
+</a>
+
+            <!-- Logout -->
+
             <a href="<%= ctx %>/LogoutServlet"
                class="app-logout-button"
                onclick="return confirm('Goodbye <%= navEmployee.getFullName() %>! Are you sure you want to logout?');">
+
                 Logout
+
             </a>
 
         <% } %>
@@ -60,7 +135,12 @@
 </nav>
 
 
-<aside class="app-sidebar" id="appSidebar">
+<!-- =========================================================
+     SIDEBAR
+     ========================================================= -->
+
+<aside class="app-sidebar"
+       id="appSidebar">
 
     <div class="app-sidebar-title">
         <%= menuTitle %>
@@ -69,81 +149,146 @@
 
     <% if (navRole == Role.EMPLOYEE) { %>
 
-        <!-- Employee Dashboard -->
+
+        <!-- =================================================
+             EMPLOYEE MENU
+             ================================================= -->
+
+
+        <!-- Home -->
+
         <a href="<%= ctx %>/EmployeeDashboardServlet">
-            &#127968; Dashboard
+
+            <span class="nav-icon">&#127968;</span>
+
+            <span>Home</span>
+
         </a>
+
+
+        <!-- Leave -->
+
+        <a href="<%= ctx %>/EmployeeLeaveMenuServlet">
+
+            <span class="nav-icon">&#128203;</span>
+
+            <span>Leave</span>
+
+        </a>
+
 
         <!-- Attendance -->
+
         <a href="#">
-            &#128197; Attendance
+
+            <span class="nav-icon">&#128197;</span>
+
+            <span>Attendance</span>
+
         </a>
 
-        <!-- Apply Leave -->
-        <a href="<%= ctx %>/ApplyLeaveServlet">
-            &#127958; Apply Leave
-        </a>
 
-        <!-- Leave History -->
-        <a href="<%= ctx %>/LeaveHistoryServlet">
-            &#128203; Leave History
-        </a>
+        <!-- My Profile -->
 
-        <!-- Work From Home -->
-        <a href="<%= ctx %>/ApplyRemoteWorkServlet">
-            &#127968; Apply for Work From Home
-        </a>
-
-        <!-- Notifications -->
-        <a href="<%= ctx %>/NotificationServlet">
-            &#128276; Notifications
-        </a>
-
-        <!-- Profile -->
         <a href="<%= ctx %>/ProfileServlet">
-            &#128100; My Profile
+
+            <span class="nav-icon">&#128100;</span>
+
+            <span>My Profile</span>
+
         </a>
 
 
     <% } else if (navRole == Role.HR) { %>
 
+
+        <!-- =================================================
+             HR MENU
+             ================================================= -->
+
+
         <!-- HR Dashboard -->
+
         <a href="<%= ctx %>/hrDashboard.jsp">
-            &#127968; HR Dashboard
+
+            <span class="nav-icon">&#127968;</span>
+
+            <span>HR Dashboard</span>
+
         </a>
+
 
         <!-- Leave Requests -->
+
         <a href="<%= ctx %>/HrLeaveRequestsServlet">
-            &#128203; Leave Requests
+
+            <span class="nav-icon">&#128203;</span>
+
+            <span>Leave Requests</span>
+
         </a>
 
-        <!-- Pending Leave Requests -->
+
+        <!-- Pending Requests -->
+
         <a href="<%= ctx %>/HrLeaveRequestsServlet?status=SUBMITTED">
-            &#9203; Pending Requests
+
+            <span class="nav-icon">&#9203;</span>
+
+            <span>Pending Requests</span>
+
         </a>
 
 
     <% } else if (navRole == Role.ADMIN) { %>
 
+
+        <!-- =================================================
+             ADMIN MENU
+             ================================================= -->
+
+
         <!-- Admin Dashboard -->
+
         <a href="<%= ctx %>/adminDashboard.jsp">
-            &#127968; Admin Dashboard
+
+            <span class="nav-icon">&#127968;</span>
+
+            <span>Admin Dashboard</span>
+
         </a>
+
 
         <!-- Leave Overview -->
+
         <a href="<%= ctx %>/AdminLeaveOverviewServlet">
-            &#128202; Leave Overview
+
+            <span class="nav-icon">&#128202;</span>
+
+            <span>Leave Overview</span>
+
         </a>
 
+
         <!-- Leave Records -->
+
         <a href="<%= ctx %>/AdminLeaveOverviewServlet?view=records">
-            &#128451; Leave Records
+
+            <span class="nav-icon">&#128451;</span>
+
+            <span>Leave Records</span>
+
         </a>
+
 
     <% } %>
 
 </aside>
 
+
+<!-- =========================================================
+     SIDEBAR SCRIPT
+     ========================================================= -->
 
 <script>
 
@@ -154,14 +299,17 @@
 
         sidebar.classList.toggle("open");
 
-        document.querySelectorAll(".page-content")
-                .forEach(function (section) {
+
+        document
+                .querySelectorAll(".page-content")
+                .forEach(function(section) {
 
                     section.classList.toggle(
                             "sidebar-open"
                     );
 
                 });
+
     }
 
 </script>

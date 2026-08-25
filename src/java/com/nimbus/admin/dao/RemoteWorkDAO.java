@@ -241,7 +241,320 @@ public class RemoteWorkDAO {
         return requests;
     }
 
+// =========================================================
+// HR: GET ALL WFH REQUESTS
+// =========================================================
 
+public List<RemoteWork> getAllRequests() {
+
+    List<RemoteWork> requests =
+            new ArrayList<>();
+
+
+    String sql =
+            "SELECT remote_id, emp_id, start_date, "
+          + "end_date, approved_by, status, requested_on "
+          + "FROM remote_work_approvals "
+          + "ORDER BY requested_on DESC, remote_id DESC";
+
+
+    try (
+            Connection con =
+                    DBConnection.getConnection();
+
+            PreparedStatement ps =
+                    con.prepareStatement(sql);
+
+            ResultSet rs =
+                    ps.executeQuery()
+    ) {
+
+
+        while (rs.next()) {
+
+            RemoteWork remoteWork =
+                    new RemoteWork();
+
+
+            remoteWork.setRemoteId(
+                    rs.getInt("remote_id")
+            );
+
+
+            remoteWork.setEmpId(
+                    rs.getInt("emp_id")
+            );
+
+
+            remoteWork.setStartDate(
+                    rs.getDate("start_date")
+            );
+
+
+            remoteWork.setEndDate(
+                    rs.getDate("end_date")
+            );
+
+
+            int approvedBy =
+                    rs.getInt("approved_by");
+
+
+            if (rs.wasNull()) {
+
+                remoteWork.setApprovedBy(0);
+
+            } else {
+
+                remoteWork.setApprovedBy(
+                        approvedBy
+                );
+
+            }
+
+
+            remoteWork.setStatus(
+                    rs.getString("status")
+            );
+
+
+            remoteWork.setRequestedOn(
+                    rs.getDate("requested_on")
+            );
+
+
+            requests.add(remoteWork);
+        }
+
+
+    } catch (Exception e) {
+
+        System.out.println(
+                "ERROR IN GET ALL REMOTE WORK:"
+        );
+
+        e.printStackTrace();
+    }
+
+
+    return requests;
+}
+
+
+// =========================================================
+// HR: GET WFH REQUESTS BY STATUS
+// =========================================================
+
+public List<RemoteWork> getRequestsByStatus(
+        String status) {
+
+    List<RemoteWork> requests =
+            new ArrayList<>();
+
+
+    String sql =
+            "SELECT remote_id, emp_id, start_date, "
+          + "end_date, approved_by, status, requested_on "
+          + "FROM remote_work_approvals "
+          + "WHERE status = ? "
+          + "ORDER BY requested_on DESC, remote_id DESC";
+
+
+    try (
+            Connection con =
+                    DBConnection.getConnection();
+
+            PreparedStatement ps =
+                    con.prepareStatement(sql)
+    ) {
+
+
+        ps.setString(
+                1,
+                status
+        );
+
+
+        try (ResultSet rs =
+                     ps.executeQuery()) {
+
+
+            while (rs.next()) {
+
+                RemoteWork remoteWork =
+                        new RemoteWork();
+
+
+                remoteWork.setRemoteId(
+                        rs.getInt("remote_id")
+                );
+
+
+                remoteWork.setEmpId(
+                        rs.getInt("emp_id")
+                );
+
+
+                remoteWork.setStartDate(
+                        rs.getDate("start_date")
+                );
+
+
+                remoteWork.setEndDate(
+                        rs.getDate("end_date")
+                );
+
+
+                int approvedBy =
+                        rs.getInt("approved_by");
+
+
+                if (rs.wasNull()) {
+
+                    remoteWork.setApprovedBy(0);
+
+                } else {
+
+                    remoteWork.setApprovedBy(
+                            approvedBy
+                    );
+
+                }
+
+
+                remoteWork.setStatus(
+                        rs.getString("status")
+                );
+
+
+                remoteWork.setRequestedOn(
+                        rs.getDate("requested_on")
+                );
+
+
+                requests.add(remoteWork);
+            }
+        }
+
+
+    } catch (Exception e) {
+
+        System.out.println(
+                "ERROR IN GET REMOTE WORK BY STATUS:"
+        );
+
+        e.printStackTrace();
+    }
+
+
+    return requests;
+}
+
+
+// =========================================================
+// HR: GET ONE WFH REQUEST
+// =========================================================
+
+public RemoteWork getRequestById(
+        int remoteId) {
+
+
+    String sql =
+            "SELECT remote_id, emp_id, start_date, "
+          + "end_date, approved_by, status, requested_on "
+          + "FROM remote_work_approvals "
+          + "WHERE remote_id = ?";
+
+
+    try (
+            Connection con =
+                    DBConnection.getConnection();
+
+            PreparedStatement ps =
+                    con.prepareStatement(sql)
+    ) {
+
+
+        ps.setInt(
+                1,
+                remoteId
+        );
+
+
+        try (ResultSet rs =
+                     ps.executeQuery()) {
+
+
+            if (rs.next()) {
+
+                RemoteWork remoteWork =
+                        new RemoteWork();
+
+
+                remoteWork.setRemoteId(
+                        rs.getInt("remote_id")
+                );
+
+
+                remoteWork.setEmpId(
+                        rs.getInt("emp_id")
+                );
+
+
+                remoteWork.setStartDate(
+                        rs.getDate("start_date")
+                );
+
+
+                remoteWork.setEndDate(
+                        rs.getDate("end_date")
+                );
+
+
+                int approvedBy =
+                        rs.getInt("approved_by");
+
+
+                if (rs.wasNull()) {
+
+                    remoteWork.setApprovedBy(0);
+
+                } else {
+
+                    remoteWork.setApprovedBy(
+                            approvedBy
+                    );
+
+                }
+
+
+                remoteWork.setStatus(
+                        rs.getString("status")
+                );
+
+
+                remoteWork.setRequestedOn(
+                        rs.getDate("requested_on")
+                );
+
+
+                return remoteWork;
+            }
+        }
+
+
+    } catch (Exception e) {
+
+        System.out.println(
+                "ERROR IN GET REMOTE WORK BY ID:"
+        );
+
+        e.printStackTrace();
+    }
+
+
+    return null;
+}
     // =========================================================
     // HR: APPROVE WFH REQUEST
     // =========================================================
@@ -334,4 +647,5 @@ public class RemoteWorkDAO {
             return false;
         }
     }
+    
 }

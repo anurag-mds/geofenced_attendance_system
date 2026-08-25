@@ -13,53 +13,76 @@ import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
 import java.sql.Date;
+import java.time.LocalDate;
 
 @WebServlet("/ApplyRemoteWorkServlet")
 public class ApplyRemoteWorkServlet extends HttpServlet {
 
     private RemoteWorkDAO remoteWorkDAO;
 
+
     @Override
     public void init() throws ServletException {
-        remoteWorkDAO = new RemoteWorkDAO();
+
+        remoteWorkDAO =
+                new RemoteWorkDAO();
     }
 
+
     // =========================================================
-    // SHOW WFH PAGE
+    // SHOW APPLY WFH PAGE
     // =========================================================
 
     @Override
-    protected void doGet(HttpServletRequest request,
-                          HttpServletResponse response)
+    protected void doGet(
+            HttpServletRequest request,
+            HttpServletResponse response)
             throws ServletException, IOException {
 
         HttpSession session =
                 request.getSession(false);
 
+
         if (session == null) {
+
             response.sendRedirect(
-                    request.getContextPath() + "/index.html"
+                    request.getContextPath()
+                    + "/index.html"
             );
+
             return;
         }
+
 
         Employee employee =
                 (Employee) session.getAttribute("employee");
 
+
         if (employee == null) {
+
             response.sendRedirect(
-                    request.getContextPath() + "/index.html"
+                    request.getContextPath()
+                    + "/index.html"
             );
+
             return;
         }
 
-        // Get this employee's previous WFH requests
+
+        /*
+         * IMPORTANT:
+         *
+         * We are NOT loading old WFH requests here anymore.
+         *
+         * History has its own separate page.
+         */
+
+
         request.setAttribute(
-                "remoteRequests",
-                remoteWorkDAO.getEmployeeRequests(
-                        employee.getEmpId()
-                )
+                "today",
+                LocalDate.now().toString()
         );
+
 
         request.getRequestDispatcher(
                 "/WEB-INF/jsp/remote-work/apply-remote-work.jsp"
@@ -72,158 +95,221 @@ public class ApplyRemoteWorkServlet extends HttpServlet {
     // =========================================================
 
     @Override
-    protected void doPost(HttpServletRequest request,
-                           HttpServletResponse response)
+    protected void doPost(
+            HttpServletRequest request,
+            HttpServletResponse response)
             throws ServletException, IOException {
 
         HttpSession session =
                 request.getSession(false);
 
+
         if (session == null) {
+
             response.sendRedirect(
-                    request.getContextPath() + "/index.html"
+                    request.getContextPath()
+                    + "/index.html"
             );
+
             return;
         }
+
 
         Employee employee =
                 (Employee) session.getAttribute("employee");
 
+
         if (employee == null) {
+
             response.sendRedirect(
-                    request.getContextPath() + "/index.html"
+                    request.getContextPath()
+                    + "/index.html"
             );
+
             return;
         }
+
 
         String startDateString =
                 request.getParameter("startDate");
 
+
         String endDateString =
                 request.getParameter("endDate");
 
-        // Check that both dates were entered
+
+        // =====================================================
+        // CHECK EMPTY DATES
+        // =====================================================
+
         if (startDateString == null
                 || startDateString.isBlank()
                 || endDateString == null
                 || endDateString.isBlank()) {
 
-            request.setAttribute(
-                    "error",
+            showError(
+                    request,
+                    response,
                     "Please select both start and end dates."
             );
 
-            request.setAttribute(
-                    "remoteRequests",
-                    remoteWorkDAO.getEmployeeRequests(
-                            employee.getEmpId()
-                    )
-            );
-
-            request.getRequestDispatcher(
-                    "/WEB-INF/jsp/remote-work/apply-remote-work.jsp"
-            ).forward(request, response);
-
             return;
         }
+
 
         try {
 
             Date startDate =
                     Date.valueOf(startDateString);
 
+
             Date endDate =
                     Date.valueOf(endDateString);
 
-            // Make sure end date is not before start date
-            if (endDate.before(startDate)) {
 
-                request.setAttribute(
-                        "error",
-                        "End date cannot be before start date."
+            Date today =
+                    Date.valueOf(
+                            LocalDate.now().toString()
+                    );
+
+
+            // =================================================
+            // DO NOT ALLOW PAST DATES
+            // =================================================
+
+            if (startDate.before(today)) {
+
+                showError(
+                        request,
+                        response,
+                        "Start date cannot be in the past."
                 );
-
-                request.setAttribute(
-                        "remoteRequests",
-                        remoteWorkDAO.getEmployeeRequests(
-                                employee.getEmpId()
-                        )
-                );
-
-                request.getRequestDispatcher(
-                        "/WEB-INF/jsp/remote-work/apply-remote-work.jsp"
-                ).forward(request, response);
 
                 return;
             }
 
+
+            if (endDate.before(today)) {
+
+                showError(
+                        request,
+                        response,
+                        "End date cannot be in the past."
+                );
+
+                return;
+            }
+
+
+            // =================================================
+            // END DATE CANNOT BE BEFORE START DATE
+            // =================================================
+
+            if (endDate.before(startDate)) {
+
+                showError(
+                        request,
+                        response,
+                        "End date cannot be before start date."
+                );
+
+                return;
+            }
+
+
+            // =================================================
+            // CREATE REQUEST
+            // =================================================
+
             RemoteWork remoteWork =
                     new RemoteWork();
 
-            // Logged-in employee
+
             remoteWork.setEmpId(
                     employee.getEmpId()
             );
+
 
             remoteWork.setStartDate(
                     startDate
             );
 
+
             remoteWork.setEndDate(
                     endDate
             );
 
-            // Status will be PENDING in database
-            // approved_by will be NULL
+
+            /*
+             * DAO inserts status as PENDING.
+             */
+
             boolean success =
                     remoteWorkDAO.applyRemoteWork(
                             remoteWork
                     );
 
+
             if (success) {
+
+                /*
+                 * After successful application,
+                 * directly show WFH history.
+                 *
+                 * This lets the employee immediately
+                 * see the new PENDING request.
+                 */
 
                 response.sendRedirect(
                         request.getContextPath()
-                        + "/ApplyRemoteWorkServlet?success=1"
+                        + "/RemoteWorkHistoryServlet?success=1"
                 );
 
             } else {
 
-                request.setAttribute(
-                        "error",
+                showError(
+                        request,
+                        response,
                         "Unable to submit your work from home request."
                 );
-
-                request.setAttribute(
-                        "remoteRequests",
-                        remoteWorkDAO.getEmployeeRequests(
-                                employee.getEmpId()
-                        )
-                );
-
-                request.getRequestDispatcher(
-                        "/WEB-INF/jsp/remote-work/apply-remote-work.jsp"
-                ).forward(request, response);
             }
+
 
         } catch (IllegalArgumentException e) {
 
-            request.setAttribute(
-                    "error",
+            showError(
+                    request,
+                    response,
                     "Please enter valid dates."
             );
-
-            request.setAttribute(
-                    "remoteRequests",
-                    remoteWorkDAO.getEmployeeRequests(
-                            employee.getEmpId()
-                    )
-            );
-
-            request.getRequestDispatcher(
-                    "/WEB-INF/jsp/remote-work/apply-remote-work.jsp"
-            ).forward(request, response);
-
         }
+    }
+
+
+    // =========================================================
+    // SHOW ERROR
+    // =========================================================
+
+    private void showError(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            String message)
+            throws ServletException, IOException {
+
+        request.setAttribute(
+                "error",
+                message
+        );
+
+
+        request.setAttribute(
+                "today",
+                LocalDate.now().toString()
+        );
+
+
+        request.getRequestDispatcher(
+                "/WEB-INF/jsp/remote-work/apply-remote-work.jsp"
+        ).forward(request, response);
     }
 }

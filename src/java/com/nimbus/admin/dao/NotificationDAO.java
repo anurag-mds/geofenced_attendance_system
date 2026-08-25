@@ -161,4 +161,49 @@ public class NotificationDAO {
             ps.executeUpdate();
         }
     }
+    /*
+ * Create a notification for an employee.
+ */
+public void insertNotification(
+        int empId,
+        String message,
+        String type)
+        throws SQLException {
+
+
+    String sql =
+            "INSERT INTO notifications "
+          + "(emp_id, message, type) "
+          + "VALUES (?, ?, ?)";
+
+
+    try (
+            Connection con = getConnection();
+
+            PreparedStatement ps =
+                    con.prepareStatement(sql)
+    ) {
+
+
+        ps.setInt(
+                1,
+                empId
+        );
+
+
+        ps.setString(
+                2,
+                message
+        );
+
+
+        ps.setString(
+                3,
+                type
+        );
+
+
+        ps.executeUpdate();
+    }
+}
 }

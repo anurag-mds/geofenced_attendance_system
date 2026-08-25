@@ -283,7 +283,14 @@
                 <% } %>
             </div>
         <% } %>
+          <a href="<%= request.getContextPath() %>/EmployeeLeaveMenuServlet"
+                   class="back-link">
+
+                    &larr; Back to Leave
+
+                </a>
     </div>
+  
     </div>
 </body>
 </html>

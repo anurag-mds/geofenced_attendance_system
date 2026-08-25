@@ -121,7 +121,14 @@
                     <button type="submit" class="btn btn-primary">Submit</button>
                 </div>
             </form>
+                      <a href="<%= request.getContextPath() %>/EmployeeLeaveMenuServlet"
+                   class="back-link">
+
+                    &larr; Back to Leave
+
+                </a>
         </div>
+                    
     </div>
 
     <script>

@@ -383,57 +383,7 @@
             </p>
         </div>
             
-            <div class="leave-section">
-                <h2>My Leave</h2>
-                <p class="section-description">Your current leave balance and recent requests.</p>
-
-                <% if (leaveBalance != null) { %>
-                    <div class="leave-balance">
-                        <div class="leave-balance-item">
-                            <div class="label">Available</div>
-                            <div class="value"><%= leaveBalance.getAvailable() %></div>
-                        </div>
-                        <div class="leave-balance-item">
-                            <div class="label">Used</div>
-                            <div class="value"><%= leaveBalance.getUsed() %></div>
-                        </div>
-                        <div class="leave-balance-item">
-                            <div class="label">Pending</div>
-                            <div class="value"><%= leaveBalance.getPending() %></div>
-                        </div>
-                    </div>
-                <% } else { %>
-                    <p class="section-description">Open the dashboard through EmployeeDashboardServlet to load leave balance.</p>
-                <% } %>
-
-                <div class="leave-request-list">
-                    <% if (recentLeaves != null && !recentLeaves.isEmpty()) { %>
-                        <% for (Leave leave : recentLeaves) { %>
-                            <div class="leave-request-item">
-                                <div>
-                                    <div class="title"><%= leave.getLeaveType().getDisplayName() %></div>
-                                    <div class="meta">
-                                        <%= leave.getFromDate().format(leaveDateFmt) %>
-                                        <% if (!leave.getFromDate().equals(leave.getToDate())) { %>
-                                            - <%= leave.getToDate().format(leaveDateFmt) %>
-                                        <% } %>
-                                    </div>
-                                </div>
-                                <span class="leave-status leave-status-<%= leave.getStatus().name() %>">
-                                    <%= leave.getStatus().getDisplayName() %>
-                                </span>
-                            </div>
-                        <% } %>
-                    <% } else { %>
-                        <div class="meta">No recent leave requests yet.</div>
-                    <% } %>
-                </div>
-
-                <div class="leave-actions">
-                    <a class="leave-button" href="ApplyLeaveServlet">Apply for Leave</a>
-                    <a class="leave-button secondary" href="LeaveHistoryServlet">View Leave History</a>
-                </div>
-            </div>
+            
             
             <!-- Summary Cards -->
             
