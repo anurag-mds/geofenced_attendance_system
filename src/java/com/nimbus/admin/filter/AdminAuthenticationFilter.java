@@ -33,7 +33,8 @@ public class AdminAuthenticationFilter implements Filter {
 		boolean directProtectedPage = httpRequest.getDispatcherType() == DispatcherType.REQUEST
 				&& "/session-expired.jsp".equals(path);
 		if (directProtectedPage && !logoutTransition) {
-			httpResponse.sendRedirect(httpRequest.getContextPath() + "/index.html");
+			httpResponse.sendRedirect(httpRequest.getContextPath()
+					+ "/index.html?error=not_authenticated");
 			return;
 		}
 
@@ -57,7 +58,8 @@ public class AdminAuthenticationFilter implements Filter {
 		if (hasAuthenticatedMarker(httpRequest)) {
 			httpRequest.getRequestDispatcher("/session-expired.jsp").forward(request, response);
 		} else {
-			httpResponse.sendRedirect(httpRequest.getContextPath() + "/index.html");
+			httpResponse.sendRedirect(httpRequest.getContextPath()
+					+ "/index.html?error=not_authenticated");
 		}
 	}
 
