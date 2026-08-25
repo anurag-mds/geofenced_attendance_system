@@ -15,7 +15,9 @@ import java.io.IOException;
 @WebServlet("/HrDashboardServlet")
 public class HrDashboardServlet extends HttpServlet {
 
-    private final HrDashboardDAO dashboardDAO = new HrDashboardDAO();
+    private final HrDashboardDAO dashboardDAO =
+            new HrDashboardDAO();
+
 
     @Override
     protected void doGet(
@@ -23,60 +25,126 @@ public class HrDashboardServlet extends HttpServlet {
             HttpServletResponse response)
             throws ServletException, IOException {
 
-        HttpSession session = request.getSession(false);
+
+        HttpSession session =
+                request.getSession(false);
+
+
+        // =====================================================
+        // SESSION CHECK
+        // =====================================================
 
         if (session == null) {
-            response.sendRedirect("index.html");
+
+            response.sendRedirect(
+                    request.getContextPath()
+                    + "/index.html"
+            );
+
             return;
         }
+
 
         Employee employee =
                 (Employee) session.getAttribute("employee");
 
+
+        // =====================================================
+        // EMPLOYEE CHECK
+        // =====================================================
+
         if (employee == null) {
-            response.sendRedirect("index.html");
+
+            response.sendRedirect(
+                    request.getContextPath()
+                    + "/index.html"
+            );
+
             return;
         }
 
-        // Make sure only HR can access this dashboard
-        if (employee.getRole() == null ||
-                !"HR".equalsIgnoreCase(
+
+        // =====================================================
+        // HR ROLE CHECK
+        // =====================================================
+
+        if (employee.getRole() == null
+                || !"HR".equalsIgnoreCase(
                         employee.getRole().name())) {
 
-            response.sendRedirect("index.html");
+            response.sendError(
+                    HttpServletResponse.SC_FORBIDDEN,
+                    "Access denied"
+            );
+
             return;
         }
+
+
+        // =====================================================
+        // LOAD DASHBOARD DATA
+        // =====================================================
 
         int totalEmployees =
                 dashboardDAO.getTotalEmployees();
 
+
         int activeEmployees =
                 dashboardDAO.getActiveEmployees();
+
 
         int inactiveEmployees =
                 dashboardDAO.getInactiveEmployees();
 
+
         int pendingLeaveRequests =
                 dashboardDAO.getPendingLeaveRequests();
 
+
+        int pendingRemoteRequests =
+                dashboardDAO.getPendingRemoteRequests();
+
+
+        // =====================================================
+        // SEND DATA TO JSP
+        // =====================================================
+
         request.setAttribute(
                 "totalEmployees",
-                totalEmployees);
+                totalEmployees
+        );
+
 
         request.setAttribute(
                 "activeEmployees",
-                activeEmployees);
+                activeEmployees
+        );
+
 
         request.setAttribute(
                 "inactiveEmployees",
-                inactiveEmployees);
+                inactiveEmployees
+        );
+
 
         request.setAttribute(
                 "pendingLeaveRequests",
-                pendingLeaveRequests);
+                pendingLeaveRequests
+        );
+
+
+        request.setAttribute(
+                "pendingRemoteRequests",
+                pendingRemoteRequests
+        );
+
+
+        // =====================================================
+        // OPEN DASHBOARD
+        // =====================================================
 
         request.getRequestDispatcher(
-        "/hrDashboard.jsp")
-        .forward(request, response);
+                "/hrDashboard.jsp"
+        ).forward(request, response);
     }
 }
