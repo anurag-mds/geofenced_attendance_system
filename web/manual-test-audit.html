@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manual QA Audit</title>
+<style>
+:root { --ink:#20242a; --muted:#687385; --paper:#f1f4f7; --panel:#fff; --line:#d9e0e7; --blue:#1769aa; --green:#197a46; --red:#b42318; --amber:#9a6700; }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--paper); color:var(--ink); font:14px/1.45 Arial,sans-serif; }
+header { background:#202124; color:#fff; padding:28px max(24px,calc((100% - 1180px)/2)); }
+header h1 { margin:0 0 5px; font-size:30px; }
+header p { margin:0; color:#cbd3dc; }
+main { max-width:1180px; margin:24px auto 60px; padding:0 20px; }
+.toolbar { position:sticky; top:0; z-index:5; display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-bottom:20px; padding:14px; background:rgba(241,244,247,.96); border-bottom:1px solid var(--line); }
+button, select { min-height:38px; padding:0 13px; border:1px solid #aeb8c3; border-radius:6px; background:#fff; color:var(--ink); font:inherit; cursor:pointer; }
+button:hover { background:#f4f7fa; }
+.primary { background:#1769aa; border-color:#1769aa; color:#fff; }
+.primary:hover { background:#12578d; }
+.danger { color:var(--red); border-color:#e3aaa5; }
+.summary { display:flex; flex-wrap:wrap; gap:10px; margin-left:auto; color:var(--muted); }
+.metric { padding:7px 10px; border:1px solid var(--line); border-radius:5px; background:#fff; }
+.metric strong { color:var(--ink); }
+.category { margin:0 0 18px; padding:20px; background:var(--panel); border:1px solid var(--line); border-radius:8px; box-shadow:0 5px 18px rgba(30,45,60,.05); }
+.category h2 { margin:0 0 4px; font-size:20px; }
+.category > p { margin:0 0 15px; color:var(--muted); }
+.test { display:grid; grid-template-columns:30px minmax(0,1fr) 150px; gap:12px; align-items:start; padding:14px 0; border-top:1px solid #edf0f3; }
+.test:first-of-type { border-top:0; }
+.test input[type=checkbox] { width:20px; height:20px; margin:2px 0; accent-color:var(--green); }
+.test label { font-weight:600; }
+.test small { display:block; margin-top:3px; color:var(--muted); font-weight:400; }
+.controls { display:flex; justify-content:flex-end; gap:6px; }
+.status { min-width:118px; min-height:34px; padding:0 8px; border-radius:5px; }
+.status.pass { border-color:#81c995; color:var(--green); background:#effaf3; }
+.status.fail { border-color:#e3aaa5; color:var(--red); background:#fff5f4; }
+.status.blocked { border-color:#e3c478; color:var(--amber); background:#fff9e8; }
+.status.pending { color:var(--muted); }
+.details { grid-column:2 / 4; display:none; gap:9px; margin-top:2px; }
+.test.has-failure .details { display:grid; }
+textarea { width:100%; min-height:62px; resize:vertical; padding:9px; border:1px solid var(--line); border-radius:5px; font:inherit; }
+.file { color:var(--muted); font-size:12px; }
+.preview { max-width:220px; max-height:120px; border:1px solid var(--line); border-radius:5px; object-fit:contain; }
+.empty { padding:30px; text-align:center; color:var(--muted); background:#fff; border:1px dashed var(--line); border-radius:8px; }
+.dialog[hidden] { display:none; }
+.dialog { position:fixed; inset:0; z-index:20; display:grid; place-items:center; padding:20px; }
+.backdrop { position:absolute; inset:0; background:rgba(20,27,35,.68); }
+.dialog-panel { position:relative; width:min(470px,100%); padding:26px; background:#fff; border:1px solid #202124; border-radius:8px; box-shadow:10px 10px 0 #202124; }
+.dialog-panel h2 { margin:0 0 8px; }
+.dialog-panel p { color:var(--muted); }
+.dialog-actions { display:flex; justify-content:flex-end; gap:8px; margin-top:20px; }
+.print-report { display:none; }
+@media print {
+ @page { size:A4; margin:16mm; }
+ body { background:#fff; color:#20242a; }
+ header, main, .dialog { display:none !important; }
+ .print-report { display:block; }
+ .print-header { border-bottom:3px solid #20242a; padding-bottom:16px; margin-bottom:20px; }
+ .print-header h1 { margin:0 0 5px; font-size:28px; }
+ .print-header p { margin:0; color:#687385; }
+ .print-meta { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:14px 0 22px; font-size:12px; }
+ .print-summary { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:24px; }
+ .print-metric { padding:10px; border:1px solid #d9e0e7; border-radius:4px; }
+ .print-metric strong { display:block; font-size:20px; }
+ .print-section { break-inside:avoid; margin-bottom:20px; }
+ .print-section h2 { margin:0 0 4px; font-size:17px; border-bottom:1px solid #d9e0e7; padding-bottom:6px; }
+ .print-section p { margin:0 0 9px; color:#687385; font-size:11px; }
+ .print-row { display:grid; grid-template-columns:65px 1fr 70px; gap:8px; padding:7px 0; border-bottom:1px solid #edf0f3; font-size:11px; }
+ .print-status { font-weight:bold; text-transform:uppercase; }
+ .print-status.pass { color:#197a46; } .print-status.fail { color:#b42318; } .print-status.blocked { color:#9a6700; } .print-status.pending { color:#687385; }
+ .print-evidence { grid-column:2 / 4; margin-top:2px; color:#4e5967; white-space:pre-wrap; }
+ .print-evidence img { display:block; max-width:300px; max-height:180px; margin-top:6px; object-fit:contain; }
+ .print-footer { margin-top:28px; padding-top:10px; border-top:1px solid #d9e0e7; color:#687385; font-size:10px; }
+}
+@media (max-width:720px) { .summary { width:100%; margin-left:0; } .test { grid-template-columns:30px 1fr; } .controls { grid-column:2; justify-content:flex-start; } .details { grid-column:2; } }
+</style>
+</head>
+<body>
+<header><h1>Manual QA Audit</h1><p>Run the application workflow one check at a time. Failed and blocked checks keep their evidence locally.</p></header>
+<main>
+<div class="toolbar">
+<button class="primary" id="save">Save locally</button><button id="pdf">Export PDF</button><button id="export">Export failed report</button><button id="copy">Copy failed report</button><button class="danger" id="reset">Reset audit</button>
+<select id="filter" aria-label="Filter checks"><option value="all">All checks</option><option value="pending">Pending only</option><option value="fail">Failed only</option><option value="blocked">Blocked only</option><option value="pass">Passed only</option></select>
+<div class="summary"><span class="metric">Total <strong id="total">0</strong></span><span class="metric">Passed <strong id="passed">0</strong></span><span class="metric">Failed <strong id="failed">0</strong></span><span class="metric">Blocked <strong id="blocked">0</strong></span></div>
+</div>
+<div id="audit"></div>
+</main>
+<div class="dialog" id="dialog" hidden><div class="backdrop" data-close></div><section class="dialog-panel" role="dialog" aria-modal="true" aria-labelledby="dialogTitle"><h2 id="dialogTitle">Reset this audit?</h2><p>All locally saved statuses, notes, and screenshots will be removed from this browser.</p><div class="dialog-actions"><button data-close>Cancel</button><button class="danger" id="confirmReset">Reset audit</button></div></section></div>
+<section class="print-report" id="printReport" aria-hidden="true"></section>
+<script>
+const categories = [
+ { name:'Access and session routing', description:'Use a fresh browser session and verify each role reaches only its own pages.', tests:[
+  ['AUTH-01','Admin login','Log in with a valid admin account.','Admin dashboard opens; no login redirect loop.'],
+  ['AUTH-02','HR login','Log in with a valid HR account.','HR dashboard opens and the HR name is correct.'],
+  ['AUTH-03','Employee login','Log in with a valid employee account.','Employee dashboard opens and the employee name is correct.'],
+  ['AUTH-04','Invalid credentials','Try an incorrect password and unknown employee code.','A useful login error appears and no protected page opens.'],
+  ['AUTH-05','Inactive account','Try an account marked INACTIVE.','Login is rejected with an inactive-account message.'],
+  ['AUTH-06','Session expiry','Wait for expiry or clear the session cookie, then open a protected URL.','User reaches the session-expired/login flow, not a broken page.'],
+  ['AUTH-07','Role isolation','Open admin, HR, and employee URLs while logged in as the wrong role.','The app returns a clear 403/error page and never redirects to an unrelated dashboard.'],
+  ['AUTH-08','Logout','Use the navbar logout action, then press Back and open a protected URL.','Logout completes and protected content is not available from browser cache.'] ]},
+ { name:'Admin management', description:'Admin owns employee, HR, and department administration.', tests:[
+  ['ADM-01','Add employee','Create a valid employee with a department.','Success toast appears and the employee appears in the list.'],
+  ['ADM-02','Add HR','Create a valid HR account.','Success toast appears and the HR account appears in the list.'],
+  ['ADM-03','Validation','Submit missing, invalid email, weak password, bad date, and duplicate email/code values.','The form stays on the form with a specific error and entered values preserved where appropriate.'],
+  ['ADM-04','Search employees','Search by code, name, and email.','Matching results appear and the route remains the employee list.'],
+  ['ADM-05','Filter employees','Filter by role, status, and department, including combinations.','Results match all selected filters and reset works.'],
+  ['ADM-06','Edit employee','Edit employee details and save.','Returns to the employee list with a success toast and updated values.'],
+  ['ADM-07','Edit HR','Edit HR details, role, department, and password.','Returns to the employee list with a success toast and updated values.'],
+  ['ADM-08','Deactivate employee','Deactivate an employee and refresh/filter inactive records.','Native app confirmation appears; account becomes INACTIVE and cannot log in.'],
+  ['ADM-09','Protect admin','Try editing or deactivating an admin account by UI and direct request.','Admin account remains protected with a clear error.'],
+  ['ADM-10','Departments','Create, edit, activate/deactivate, and delete departments.','Each action returns to Manage Departments with a clear result; deletion is blocked when employees are assigned.'] ]},
+ { name:'HR management', description:'HR manages its own profile and employees in its department.', tests:[
+  ['HR-01','HR navigation','Open every HR hamburger link, including Profile and My Employees.','Every link opens the correct HR page without login or admin-dashboard redirects.'],
+  ['HR-02','Edit own profile','Open the HR account row, change name/designation/email/password, and save.','Edit button is present; save returns to My Employees with a toast; dashboard/navbar/profile show the new name.'],
+  ['HR-03','Protect own account','Inspect the HR row actions.','HR has Edit but no Deactivate action for itself.'],
+  ['HR-04','Manage department employees','Edit and deactivate an employee in the HR department.','Edit and Deactivate are visible and work; employee outside the department cannot be managed.'],
+  ['HR-05','Protect another HR','Try direct edit/deactivate URL for another HR account.','Request is rejected with 403/protected response.'],
+  ['HR-06','Leave requests','Open, filter, review, approve, reject, and modify remarks on department leave requests.','Every result returns to the correct HR leave page and counts/statuses update.'],
+  ['HR-07','WFH approvals','Open pending/all WFH requests and approve/reject one.','Result returns to HR WFH requests; employee receives the correct notification.'] ]},
+ { name:'Employee workflows', description:'Exercise the employee-facing workflows with valid and invalid data.', tests:[
+  ['EMP-01','Employee navigation','Open dashboard, attendance, leave, WFH, notifications, profile, and logout links.','Each enabled link reaches the intended page; no dead or wrong-role route.'],
+  ['EMP-02','Apply leave','Submit a valid leave request and verify it in history.','Success message appears and the request is listed with the expected status.'],
+  ['EMP-03','Leave validation','Try reversed dates, overlap, invalid type, empty reason, and past dates.','Specific validation appears without losing the page or creating a bad record.'],
+  ['EMP-04','Modify leave','Modify a SUBMITTED request, then try modifying an approved/rejected request.','Only allowed state changes succeed and the result returns to Leave History.'],
+  ['EMP-05','Cancel leave','Cancel a SUBMITTED request, then try canceling a completed request.','Allowed cancellation updates status; disallowed action is rejected cleanly.'],
+  ['EMP-06','Apply WFH','Submit today/future dates within 15 days.','Success message appears and the request appears in the list.'],
+  ['EMP-07','WFH validation','Try missing dates, reversed dates, past dates, and a range over 15 days.','Readable validation appears; no incorrect request is stored.'] ]},
+ { name:'Chat, files, and notifications', description:'Verify direct/group conversations, attachments, and notification links.', tests:[
+  ['CHAT-01','Open chat','Open Contact Admin/Contact HR from each role.','Correct contacts and conversation load without redirecting to login.'],
+  ['CHAT-02','Send direct message','Send text to an allowed contact.','Message appears once after redirect and recipient gets a notification.'],
+  ['CHAT-03','Send group message','Send an Admin + HR group message and mention a member.','Message is visible to group members and notification links open the group.'],
+  ['CHAT-04','Attachment preview','Send a valid image/PDF, then use View and Download.','View opens in the in-page viewer; Download downloads the file with the expected name.'],
+  ['CHAT-05','Attachment validation','Try an oversized or unsupported attachment.','Clear validation appears and no unsafe path is exposed.'],
+  ['CHAT-06','Clear chat','Clear a direct and a group conversation.','Built-in app modal appears, cancel preserves messages, confirm removes only the selected conversation.'],
+  ['CHAT-07','Notifications','Open, mark read, clear one, and clear all notifications.','Each action returns to Notifications and only authorized records change.'],
+  ['CHAT-08','Notification routing','Click notifications for leave, WFH, chat, and account events.','Each link opens the correct target page for the logged-in role.'] ]},
+ { name:'Security and resilience', description:'Try direct requests and failure conditions, not only the happy path.', tests:[
+  ['SEC-01','CSRF protection','Submit a POST after removing or changing csrfToken.','Request is rejected with 403 and no data changes.'],
+  ['SEC-02','ID tampering','Change employee, leave, WFH, message, and notification IDs in URLs/forms.','Only permitted records are accessible or changed.'],
+  ['SEC-03','Output escaping','Use HTML/script-like text in names, messages, and remarks.','Text is displayed as text and never executes as markup/script.'],
+  ['SEC-04','Refresh safety','Refresh after every create/update/delete action.','No duplicate POST occurs and the result remains consistent.'],
+  ['SEC-05','Responsive layout','Run the core flows at desktop and mobile widths.','No clipped buttons, overlapping helper text, inaccessible tables, or unusable dialogs.'],
+  ['SEC-06','Database outage','Stop the database or use invalid connection settings in a test environment.','App shows a controlled error page/message and does not leak credentials or stack traces.'] ]}
+];
+const dbName='manual-qa-audit'; let state={}; let db;
+function allTests(){return categories.flatMap(category=>category.tests.map(test=>({category:category.name,id:test[0],title:test[1],steps:test[2],expect:test[3]})));}
+function openDb(){return new Promise((resolve,reject)=>{const request=indexedDB.open(dbName,1); request.onupgradeneeded=()=>request.result.createObjectStore('checks',{keyPath:'id'}); request.onsuccess=()=>{db=request.result;resolve()};request.onerror=()=>reject(request.error)});}
+function readState(){return new Promise(resolve=>{const request=db.transaction('checks').objectStore('checks').getAll();request.onsuccess=()=>{request.result.forEach(item=>state[item.id]=item);resolve()};request.onerror=()=>resolve()});}
+function saveItem(item){return new Promise(resolve=>{const request=db.transaction('checks','readwrite').objectStore('checks').put(item);request.onsuccess=resolve;request.onerror=resolve})}
+function render(){const filter=document.getElementById('filter').value; const audit=document.getElementById('audit'); audit.innerHTML=''; let visible=0; categories.forEach(category=>{const tests=category.tests.map(test=>({category:category.name,id:test[0],title:test[1],steps:test[2],expect:test[3]})).filter(test=>filter==='all'||(state[test.id]?.status||'pending')===filter);if(!tests.length)return;visible+=tests.length;const section=document.createElement('section');section.className='category';section.innerHTML='<h2>'+category.name+'</h2><p>'+category.description+'</p>';tests.forEach(test=>section.appendChild(testElement(test)));audit.appendChild(section)});if(!visible)audit.innerHTML='<div class="empty">No checks match this filter.</div>';updateSummary()}
+function testElement(test){const item=state[test.id]||{id:test.id,status:'pending',note:'',image:''};const row=document.createElement('article');row.className='test '+(item.status==='fail'||item.status==='blocked'?'has-failure':'');row.dataset.id=test.id;row.innerHTML='<input type="checkbox" aria-label="Mark '+test.id+' passed" '+(item.status==='pass'?'checked':'')+'><div><label>'+test.id+' · '+test.title+'</label><small>Do: '+test.steps+'<br>Expect: '+test.expect+'</small></div><div class="controls"><select class="status '+item.status+'" aria-label="Status"><option value="pending">Not tested</option><option value="pass">Passed</option><option value="fail">Failed</option><option value="blocked">Blocked</option></select></div><div class="details"><textarea placeholder="What happened? Include the exact URL, user role, steps, and expected vs actual result."></textarea><input class="file" type="file" accept="image/*"><img class="preview" alt="Failure evidence" '+(item.image?'src="'+item.image+'"':'hidden')+'></div>';const checkbox=row.querySelector('input[type=checkbox]'),select=row.querySelector('select'),note=row.querySelector('textarea'),file=row.querySelector('input[type=file]'),preview=row.querySelector('img');select.value=item.status;note.value=item.note||'';checkbox.addEventListener('change',()=>{select.value=checkbox.checked?'pass':'pending';update()});select.addEventListener('change',()=>{checkbox.checked=select.value==='pass';update()});note.addEventListener('input',()=>{state[test.id]={...state[test.id],id:test.id,status:select.value,note:note.value,image:state[test.id]?.image||''};saveItem(state[test.id])});file.addEventListener('change',()=>{const selected=file.files[0];if(!selected)return;const reader=new FileReader();reader.onload=()=>{state[test.id]={...state[test.id],id:test.id,status:select.value,note:note.value,image:reader.result};preview.src=reader.result;preview.hidden=false;saveItem(state[test.id])};reader.readAsDataURL(selected)});return row;}
+function update(){document.querySelectorAll('.test').forEach(row=>{const id=row.dataset.id;const select=row.querySelector('select'),checkbox=row.querySelector('input[type=checkbox]'),note=row.querySelector('textarea');const item={...state[id],id,status:select.value,note:note.value};state[id]=item;row.classList.toggle('has-failure',item.status==='fail'||item.status==='blocked');saveItem(item)});updateSummary()}
+function updateSummary(){const tests=allTests(),counts={pending:0,pass:0,fail:0,blocked:0};tests.forEach(test=>counts[state[test.id]?.status||'pending']++);document.getElementById('total').textContent=tests.length;document.getElementById('passed').textContent=counts.pass;document.getElementById('failed').textContent=counts.fail;document.getElementById('blocked').textContent=counts.blocked;}
+function report(){return {generatedAt:new Date().toISOString(),summary:{total:allTests().length,passed:allTests().filter(t=>state[t.id]?.status==='pass').length,failed:allTests().filter(t=>state[t.id]?.status==='fail').length,blocked:allTests().filter(t=>state[t.id]?.status==='blocked').length},failures:allTests().filter(t=>['fail','blocked'].includes(state[t.id]?.status)).map(t=>({...t,status:state[t.id].status,note:state[t.id].note||'',evidenceImage:state[t.id].image||null}))};}
+function escapeHtml(value){return String(value||'').replace(/[&<>"']/g,character=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[character]));}
+function buildPrintReport(){const data=report(), statusFor=test=>state[test.id]?.status||'pending'; const sections=categories.map(category=>'<section class="print-section"><h2>'+escapeHtml(category.name)+'</h2><p>'+escapeHtml(category.description)+'</p>'+category.tests.map(raw=>{const test={id:raw[0],title:raw[1],steps:raw[2],expect:raw[3]};const status=statusFor(test),item=state[test.id]||{};return '<div class="print-row"><strong>'+escapeHtml(test.id)+'</strong><div><strong>'+escapeHtml(test.title)+'</strong><br>Do: '+escapeHtml(test.steps)+'<br>Expect: '+escapeHtml(test.expect)+'</div><span class="print-status '+status+'">'+(status==='pending'?'Not tested':status)+'</span>'+((status==='fail'||status==='blocked')&&(item.note||item.image)?'<div class="print-evidence"><strong>Evidence:</strong> '+escapeHtml(item.note)+(item.image?'<img src="'+item.image+'" alt="Evidence for '+escapeHtml(test.id)+'">':'')+'</div>':'')+'</div>';}).join('')+'</section>').join(''); const verdict=data.summary.failed||data.summary.blocked?'ACTION REQUIRED':data.summary.passed===data.summary.total?'PASSED':'IN PROGRESS'; document.getElementById('printReport').innerHTML='<div class="print-header"><h1>Manual QA Test Report</h1><p>Employee Attendance System</p><div class="print-meta"><span><strong>Generated:</strong> '+new Date(data.generatedAt).toLocaleString()+'</span><span><strong>Verdict:</strong> '+verdict+'</span></div></div><div class="print-summary"><div class="print-metric"><strong>'+data.summary.total+'</strong>Total checks</div><div class="print-metric"><strong>'+data.summary.passed+'</strong>Passed</div><div class="print-metric"><strong>'+data.summary.failed+'</strong>Failed</div><div class="print-metric"><strong>'+data.summary.blocked+'</strong>Blocked</div></div>'+sections+'<div class="print-footer">This report was generated from the local manual QA audit. Pending checks require testing before sign-off.</div>';}
+function exportPdf(){buildPrintReport();document.body.classList.add('printing');window.addEventListener('afterprint',function cleanup(){document.body.classList.remove('printing');window.removeEventListener('afterprint',cleanup);},{once:true});window.print();}
+function download(){const blob=new Blob([JSON.stringify(report(),null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download='manual-qa-failures.json';link.click();URL.revokeObjectURL(url)}
+async function copy(){const text=JSON.stringify(report(),null,2);try{await navigator.clipboard.writeText(text);alert('Failed report copied to the clipboard.')}catch(e){download()}}
+document.getElementById('filter').addEventListener('change',render);document.getElementById('save').addEventListener('click',()=>{render();document.getElementById('save').textContent='Saved locally';setTimeout(()=>document.getElementById('save').textContent='Save locally',1600)});document.getElementById('pdf').addEventListener('click',exportPdf);document.getElementById('export').addEventListener('click',download);document.getElementById('copy').addEventListener('click',copy);document.getElementById('reset').addEventListener('click',()=>document.getElementById('dialog').hidden=false);document.querySelectorAll('[data-close]').forEach(e=>e.addEventListener('click',()=>document.getElementById('dialog').hidden=true));document.getElementById('confirmReset').addEventListener('click',async()=>{state={};await new Promise(resolve=>{const request=db.transaction('checks','readwrite').objectStore('checks').clear();request.onsuccess=resolve;request.onerror=resolve});document.getElementById('dialog').hidden=true;render()});
+(async()=>{await openDb();await readState();render()})();
+</script>
+</body>
+</html>

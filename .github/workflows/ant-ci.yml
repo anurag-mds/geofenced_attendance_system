@@ -1,0 +1,53 @@
+name: Ant CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Install Ant
+        run: sudo apt-get update && sudo apt-get install --no-install-recommends -y ant
+
+      - name: Download Tomcat and JDBC driver
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/tomcat" lib
+          curl -fsSL https://archive.apache.org/dist/tomcat/tomcat-10/v10.1.57/bin/apache-tomcat-10.1.57.tar.gz \
+            | tar -xz --strip-components=1 -C "$RUNNER_TEMP/tomcat"
+          curl -fsSL -o lib/mysql-connector-j-9.7.0.jar \
+            https://repo1.maven.org/maven2/com/mysql/mysql-connector-j/9.7.0/mysql-connector-j-9.7.0.jar
+
+      - name: Validate Ant build and package WAR
+        run: >-
+          ant clean dist
+          -Dj2ee.server.home="$RUNNER_TEMP/tomcat"
+          -Dtomcat.home="$RUNNER_TEMP/tomcat"
+
+      - name: Verify expected routes and views
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f dist/EmployeeAttendance.war
+          test -f web/WEB-INF/jsp/leave/leave-overview.jsp
+          test -f web/WEB-INF/jsp/reports/report-dashboard.jsp
+          test -f web/WEB-INF/jsp/admin/attendance-settings.jsp
+          grep -Rqs '@WebServlet("/AdminLeaveOverviewServlet")' src/java
+          ! grep -Rqs 'AdminLeaveOverviewServlet' web/WEB-INF/jsp/leave/leave-overview.jsp || \
+            grep -Rqs '@WebServlet("/AdminLeaveOverviewServlet")' src/java

@@ -1,0 +1,691 @@
+
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@ page import="com.nimbus.admin.model.Employee" %>
+<%@ page import="com.nimbus.admin.leave.model.Leave" %>
+<%@ page import="com.nimbus.admin.leave.model.LeaveBalance" %>
+<%@ page import="java.time.format.DateTimeFormatter" %>
+<%@ page import="java.util.List" %>
+
+<%
+    // Get the logged-in employee from the session
+    Employee employee =
+        (Employee) session.getAttribute("employee");
+
+    // If there is no employee in the session,
+    // send the user back to the login page
+    if (employee == null) {
+        response.sendRedirect(request.getContextPath() + "/index.html");
+        return;
+    }
+
+    LeaveBalance leaveBalance = (LeaveBalance) request.getAttribute("leaveBalance");
+    List<Leave> recentLeaves = (List<Leave>) request.getAttribute("recentLeaves");
+    DateTimeFormatter leaveDateFmt = DateTimeFormatter.ofPattern("dd MMM");
+%>
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Employee Dashboard</title>
+    <%@ include file="/WEB-INF/jsp/common/nav-styles.jsp" %>
+    <style>
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f4f7;
+        }
+
+        /* Main dashboard */
+        .dashboard {
+            padding: 30px;
+        }
+
+        .welcome {
+            margin-bottom: 30px;
+        }
+
+        .welcome h1 {
+            color: #222;
+            margin-bottom: 8px;
+            font-size: 28px;
+        }
+
+        .welcome p {
+            color: #666;
+        } 
+        @media (max-width: 1000px){
+            .sidebar{
+                width: 250px;
+            }
+            .dashboard{
+                margin-left : 190px;
+                padding: 25px;
+            }
+            .navbar {
+            padding: 0 20px;
+            }
+        }
+        
+        
+        /* Summary  Cards */
+        
+        .summary-cards{
+            display: grid;
+            grid-template-columns: repeat(4,1fr);
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+        .summary-card{
+            background-color: white;
+            padding:22px;
+            border-radius: 10px;
+            
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+            
+            border-left: 5px solid #333;
+        }
+        
+        .summary-card .card-title{
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        
+        .summary-card .card-number{
+            font-size: 28px;
+            font-weight: bold;
+            color:#222;
+        }
+        .summary-card .card-subtext {
+            margin-top: 6px;
+            font-size: 13px;
+            color: #888;
+        }
+        
+        .summary-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .summary-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18);
+        }
+        
+        .leave-section {
+            background-color: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+            margin-bottom: 25px;
+        }
+
+        .leave-section h2 {
+            font-size: 20px;
+            margin-bottom: 6px;
+            color: #222;
+        }
+
+        .leave-section .section-description {
+            color: #777;
+            font-size: 13px;
+            margin-bottom: 20px;
+        }
+
+        .leave-balance {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 22px;
+        }
+
+        .leave-balance-item {
+            background: #fafbfc;
+            border: 1px solid #eceff3;
+            border-radius: 8px;
+            padding: 16px;
+        }
+
+        .leave-balance-item .label {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .leave-balance-item .value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #222;
+        }
+
+        .leave-request-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .leave-request-item {
+            border: 1px solid #eceff3;
+            border-radius: 8px;
+            padding: 14px 16px;
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            align-items: center;
+        }
+
+        .leave-request-item .title {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .leave-request-item .meta {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .leave-status {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .leave-status-SUBMITTED { background: #e8f1ff; color: #1f5fbf; }
+        .leave-status-UNDER_REVIEW { background: #fff4d6; color: #9a6b00; }
+        .leave-status-APPROVED { background: #e7f7ec; color: #1f7a3f; }
+        .leave-status-REJECTED { background: #fdecea; color: #b42318; }
+        .leave-status-CANCELLED { background: #f1f3f5; color: #5f6368; }
+
+        .leave-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .leave-button {
+            display: inline-block;
+            padding: 10px 16px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 14px;
+            background: #222;
+            color: white;
+        }
+
+        .leave-button.secondary {
+            background: #e9ecef;
+            color: #333;
+        }
+
+        
+        /* chart section */
+        
+        .chart-section {
+         display: grid;
+         grid-template-columns: 1fr 1.4fr;
+         gap: 25px;
+         margin-bottom: 25px;
+        }
+
+        .chart-box {
+          background-color: white;
+          padding: 25px;
+          border-radius: 10px;
+
+          box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+        }
+
+        .chart-box h2 {
+          font-size: 18px;
+          color: #222;
+          margin-bottom: 5px;
+        }
+
+       .chart-box .chart-description {
+          color: #777;
+          font-size: 13px;
+          margin-bottom: 20px;
+         }
+ 
+         /* pie chart */
+         
+         .pie-chart{
+             width: 220px;
+             height: 220px;
+             
+             border-radius: 50%;
+             
+             margin: 20px auto;
+             
+             background:
+                 conic-gradient(
+                    #4caf50 0deg 270deg,
+                    #e74c3c 270deg 310deg,
+                    #f1c40f 310deg 330deg,
+                    #9b59b6 330deg 360deg
+                 );
+         }
+         .legend {
+           display: flex;
+           flex-direction: column;
+           gap: 8px;
+        }
+
+         .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+
+            font-size: 14px;
+}
+
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+        }
+        
+        /* LINE CHART */
+
+        .line-chart {
+            width: 100%;
+            height: 280px;
+            margin-top: 15px;
+        }
+
+        .line-chart svg {
+            width: 100%;
+            height: 100%;
+            overflow: visible;
+            }
+
+        .grid-line {
+          stroke: #444;
+             stroke-width: 1;
+        }
+
+        .chart-line {
+             fill: none;
+            stroke: #4caf50;
+            stroke-width: 3;
+        }
+
+        .chart-point {
+            fill: #4caf50;
+            stroke: #ffffff;
+            stroke-width: 2;
+        }
+
+        .chart-value {
+            fill: #ffffff;
+            font-size: 12px;
+            text-anchor: middle;
+        }
+
+        .chart-week {
+            fill: #999;
+            font-size: 12px;
+            text-anchor: middle;
+            }
+          
+
+    
+        /*RESPONSIVE */
+        
+        @media (max-width: 1000px) {
+
+            .summary-cards {
+                    grid-template-columns: repeat(2, 1fr);
+                }
+
+            .chart-section {
+                     grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 600px) {
+
+            .summary-cards {
+                    grid-template-columns: 1fr;
+            }
+        }
+
+    </style>
+</head>
+<body>
+    <%@ include file="/WEB-INF/jsp/common/app-nav.jsp" %>
+    <div class="page-content">
+    <div class="dashboard">
+        <!-- Welcome message -->
+        <div class="welcome">
+            <h1>
+                Welcome, <%= employee.getFullName() %>!
+            </h1>
+            <p>
+                Here's today's attendance overview.
+            </p>
+        </div>
+            
+            <div class="leave-section">
+                <h2>My Leave</h2>
+                <p class="section-description">Your current leave balance and recent requests.</p>
+
+                <% if (leaveBalance != null) { %>
+                    <div class="leave-balance">
+                        <div class="leave-balance-item">
+                            <div class="label">Available</div>
+                            <div class="value"><%= leaveBalance.getAvailable() %></div>
+                        </div>
+                        <div class="leave-balance-item">
+                            <div class="label">Used</div>
+                            <div class="value"><%= leaveBalance.getUsed() %></div>
+                        </div>
+                        <div class="leave-balance-item">
+                            <div class="label">Pending</div>
+                            <div class="value"><%= leaveBalance.getPending() %></div>
+                        </div>
+                    </div>
+                <% } else { %>
+                    <p class="section-description">Open the dashboard through EmployeeDashboardServlet to load leave balance.</p>
+                <% } %>
+
+                <div class="leave-request-list">
+                    <% if (recentLeaves != null && !recentLeaves.isEmpty()) { %>
+                        <% for (Leave leave : recentLeaves) { %>
+                            <div class="leave-request-item">
+                                <div>
+                                    <div class="title"><%= leave.getLeaveType().getDisplayName() %></div>
+                                    <div class="meta">
+                                        <%= leave.getFromDate().format(leaveDateFmt) %>
+                                        <% if (!leave.getFromDate().equals(leave.getToDate())) { %>
+                                            - <%= leave.getToDate().format(leaveDateFmt) %>
+                                        <% } %>
+                                    </div>
+                                </div>
+                                <span class="leave-status leave-status-<%= leave.getStatus().name() %>">
+                                    <%= leave.getStatus().getDisplayName() %>
+                                </span>
+                            </div>
+                        <% } %>
+                    <% } else { %>
+                        <div class="meta">No recent leave requests yet.</div>
+                    <% } %>
+                </div>
+
+                <div class="leave-actions">
+                    <a class="leave-button" href="<%= request.getContextPath() %>/ApplyLeaveServlet">Apply for Leave</a>
+                    <a class="leave-button secondary" href="<%= request.getContextPath() %>/LeaveHistoryServlet">View Leave History</a>
+                </div>
+            </div>
+            
+            <!-- Summary Cards -->
+            
+            <div class="summary-cards">
+                <div class="summary-card">
+                    <div class="card-title">
+                        👥 Total Employees
+                    </div>
+                    <div class="card-number">
+                         52
+                    </div>
+
+                    <div class="card-subtext">
+                      Active employees
+                    </div>
+                </div>
+                <div class="summary-card">
+
+                    <div class="card-title">
+                         🟢 Present Today
+                    </div>
+
+                    <div class="card-number">
+                       43
+                    </div>
+
+                    <div class="card-subtext">
+                         Employees present
+                    </div>
+                </div>
+                <div class="summary-card">
+
+                    <div class="card-title">
+                      🔴 Absent Today
+                    </div>
+
+                    <div class="card-number">
+                         6
+                    </div>
+
+                    <div class="card-subtext">
+                         Employees absent
+                    </div>
+
+                </div>              
+                <div class="summary-card">
+
+                    <div class="card-title">
+                        ⏰ Late / Half Day
+                    </div>
+
+                    <div class="card-number">
+                        3
+                    </div>
+                    
+                    <div class="card-subtext">
+                        2 Late • 1 Half Day
+                    </div>
+                </div>
+
+            </div>
+            
+            <!-- Charts -->
+            
+            <div class="chart-section">
+                <!-- pie chart -->
+                
+                <div class="chart-box">
+                    <h2>Today's Attendance</h2>
+                    <p class="chart-description">
+                        Attendence description for today
+                    </p>
+                    <div class="pie-chart"></div>
+                    <div class="legend">
+
+                        <div class="legend-item">
+                            <span class="legend-color"
+                                style="background:#4caf50;">
+                            </span>
+                        Present — 43
+                        </div>  
+                        
+                        <div class="legend-item">
+                            <span class="legend-color"
+                                style="background:#e74c3c;">
+                            </span>
+                        Absent — 6
+                        </div> 
+                       
+                        <div class="legend-item">
+                            <span class="legend-color"
+                                style="background:#f1c40f;">
+                            </span>
+
+                        Late — 2
+                        </div>
+
+                        <div class="legend-item">
+                            <span class="legend-color"
+                                style="background:#9b59b6;">
+                            </span>
+
+                        Half Day — 1
+                        </div>
+                    
+                    </div>
+                </div>    
+            
+            
+            <!-- Attendance trend -->
+                <div class="chart-box">
+                    <h2>Weekly Attendance Trend</h2>
+                    
+                    <p class="chart-description">
+                        Overall attendance percentage by week
+                    </p>
+                    
+                    <div class="line-chart">
+                        <svg viewBox="0 0 600 280">
+                        <!-- Horizontal Grid Lines -->
+                        
+                            <line x1="60" y1="30"
+                            x2="570" y2="30"
+                            class="grid-line"/>
+
+                            <line x1="60" y1="80"
+                            x2="570" y2="80"
+                            class="grid-line"/>
+
+                            <line x1="60" y1="130"
+                            x2="570" y2="130"
+                            class="grid-line"/>
+
+                            <line x1="60" y1="180"
+                            x2="570" y2="180"
+                            class="grid-line"/>
+
+                            <line x1="60" y1="230"
+                            x2="570" y2="230"
+                            class="grid-line"/>            
+                            
+                            
+                            <!-- Y axis labels -->
+                    
+                                <text x="45" y="35"
+                                    class="chart-value">
+                                    100%
+                                </text>
+
+                                <text x="45" y="85"
+                                    class="chart-value">
+                                    95%
+                                </text>
+
+                                <text x="45" y="135"
+                                    class="chart-value">
+                                    90%
+                                </text>
+
+                                <text x="45" y="185"
+                                    class="chart-value">
+                                    85%
+                                </text>
+
+                                <text x="45" y="235"
+                                    class="chart-value">
+                                    80%
+                                </text>
+                                
+                                <!-- Attendance line -->
+                                <polyline 
+                                    points="90,230,250,160,410,100,550,150"
+                                    class="chart-line"
+                                />
+                                
+                                <!--Points-->
+                                
+                                    <circle 
+                                        cx="90"
+                                        cy="230"
+                                        r="6"
+                                        class="chart-point"
+                                    />
+                                
+                                    <circle
+                                       cx="250"
+                                        cy="160"
+                                        r="6"
+                                        class="chart-point"
+                                    />
+                                    <circle
+                                        cx="410"
+                                        cy="100"
+                                        r="6"
+                                        class="chart-point"
+                                    />
+
+                                    <circle
+                                        cx="550"
+                                        cy="150"
+                                        r="6"
+                                        class="chart-point"
+                                    />
+                                <!-- Values -->
+
+                                    <text x="90" y="212"
+                                        class="chart-value">
+                                        80%
+                                    </text>
+
+                                    <text x="250" y="142"
+                                        class="chart-value">
+                                        87%
+                                    </text>
+
+                                    <text x="410" y="82"
+                                        class="chart-value">
+                                        91%
+                                    </text>
+
+                                    <text x="550" y="132"
+                                        class="chart-value">
+                                        86%
+                                    </text>
+
+
+                                <!-- Week labels -->
+
+                                    <text x="90" y="260"
+                                            class="chart-week">
+                                                 Week 1
+                                    </text>
+
+                                    <text x="250" y="260"
+                                            class="chart-week">
+                                            Week 2
+                                    </text>
+
+                                    <text x="410" y="260"
+                                            class="chart-week">
+                                            Week 3
+                                    </text>
+
+                                    <text x="550" y="260"
+                                            class="chart-week">
+                                            Week 4
+                                    </text>
+
+                        </svg>        
+                    </div>
+                </div>
+            </div>        
+    </div>
+    </div>
+</body>
+</html>
