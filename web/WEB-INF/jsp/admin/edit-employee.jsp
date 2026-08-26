@@ -10,6 +10,7 @@
     String error = (String) request.getAttribute("error");
     Employee viewer = (Employee) session.getAttribute("employee");
     boolean adminView = viewer != null && viewer.getRole() == Role.ADMIN;
+    boolean ownAdminEdit = adminView && employee != null && viewer.getEmpId() == employee.getEmpId();
         boolean isHr = employee != null && employee.getRole() == Role.HR;
 %>
 <!DOCTYPE html>
@@ -47,18 +48,20 @@
                 <label>Full name<input name="fullName" value="<%= employee.getFullName() %>" required></label>
                 <label>Email<input type="email" name="email" value="<%= employee.getEmail() %>"></label>
                 <label>New password<input type="password" name="password" minlength="8" maxlength="50" pattern="(?=.*[A-Za-z])(?=.*[0-9])[A-Za-z0-9]{8,50}" title="Use 8-50 letters and numbers, including at least one of each." placeholder="Leave blank to keep current" autocomplete="new-password"></label>
-                <% if (adminView) { %><label>Role<select name="role" id="role" onchange="toggleDepartmentRequirement()"><option value="EMPLOYEE" <%= employee.getRole() == Role.EMPLOYEE ? "selected" : "" %>>EMPLOYEE</option><option value="HR" <%= employee.getRole() == Role.HR ? "selected" : "" %>>HR</option></select></label><% } else { %><input type="hidden" name="role" value="<%= employee.getRole().name() %>"><% } %>
-                <label>Designation<input name="designation" value="<%= employee.getDesignation() %>"></label>
-                <label>Department<select name="deptId" id="deptId" <%= isHr ? "" : "required" %>><option value="">Select department</option><% if (departments != null) { for (Department department : departments) { %><option value="<%= department.getDeptId() %>" <%= department.getDeptId() == employee.getDeptId() ? "selected" : "" %>><%= department.getDeptName() %></option><% }} %></select></label>
+                <% if (adminView && !ownAdminEdit) { %><label>Role<select name="role" id="role" onchange="toggleDepartmentRequirement()"><option value="EMPLOYEE" <%= employee.getRole() == Role.EMPLOYEE ? "selected" : "" %>>EMPLOYEE</option><option value="HR" <%= employee.getRole() == Role.HR ? "selected" : "" %>>HR</option></select></label><% } else { %><input type="hidden" name="role" value="<%= employee.getRole().name() %>"><% } %>
+                <label>Designation<input name="designation" value="<%= isHr ? "HR Manager" : employee.getDesignation() %>" <%= isHr || ownAdminEdit ? "readonly" : "" %>></label>
+                <label>Department<select name="deptId" id="deptId" <%= isHr || ownAdminEdit ? "disabled" : "required" %>><option value="">Select department</option><% if (departments != null) { for (Department department : departments) { %><option value="<%= department.getDeptId() %>" <%= department.getDeptId() == employee.getDeptId() ? "selected" : "" %>><%= department.getDeptName() %></option><% }} %></select></label>
                 <label>Joining date<input type="date" name="joiningDate" value="<%= employee.getJoiningDate() %>" required></label>
-                <label>Employment status<select name="employmentStatus"><% for (EmploymentStatus status : EmploymentStatus.values()) { %><option value="<%= status.name() %>" <%= status == employee.getEmploymentStatus() ? "selected" : "" %>><%= status.name() %></option><% } %></select></label>
+                <% if (!ownAdminEdit) { %><label>Employment status<select name="employmentStatus"><% for (EmploymentStatus status : EmploymentStatus.values()) { %><option value="<%= status.name() %>" <%= status == employee.getEmploymentStatus() ? "selected" : "" %>><%= status.name() %></option><% } %></select></label><% } %>
             </div>
             <button type="submit">Save Changes</button>
         </form>
     </div></div></main>
     <script>
         function toggleDepartmentRequirement() {
-            const isHr = document.getElementById('role').value === 'HR';
+            const roleField = document.getElementById('role');
+            if (!roleField) return;
+            const isHr = roleField.value === 'HR';
             const departmentField = document.getElementById('deptId');
             departmentField.required = !isHr;
             departmentField.disabled = false;

@@ -51,8 +51,11 @@
         tbody tr:hover { background: #f8fafc; }
         .actions { display: flex; gap: 6px; align-items: center; }
         .actions form { margin: 0; }
-        .actions-cell { position: sticky; right: 0; background: #fff; box-shadow: -8px 0 12px rgba(31,35,40,.04); }
-        tbody tr:hover .actions-cell { background: #f8fafc; }
+        .status-cell { min-width: 92px; }
+        .actions-cell { min-width: 230px; }
+        td.actions-cell { background: #fff; }
+        th.actions-cell { background: #f6f8fa; }
+        tbody tr:hover td.actions-cell { background: #f8fafc; }
         .action-link { width: 86px; height: 32px; display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; padding: 0; border: 1px solid #ccd1d6; border-radius: 5px; color: #24292f; text-decoration: none; font: 12px Arial, sans-serif; }
         .action-link:hover { background: #f6f8fa; }
         .danger { color: #cf222e; background: #fff; }
@@ -91,7 +94,7 @@
         </form>
         <% } %>
         <div class="table-wrap"><table>
-            <thead><tr><th>ID</th><th>Code</th><th>Full name</th><th>Email</th><th>Password</th><th>Role</th><th>Designation</th><th>Department</th><th>Joining date</th><th>Status</th><th>Actions</th></tr></thead>
+            <thead><tr><th>ID</th><th>Code</th><th>Full name</th><th>Email</th><th>Password</th><th>Role</th><th>Designation</th><th>Department</th><th>Joining date</th><th class="status-cell">Status</th><th class="actions-cell">Actions</th></tr></thead>
             <tbody>
             <% if (employees != null && !employees.isEmpty()) { %>
             <% for (Employee employee : employees) { %>
@@ -105,9 +108,10 @@
                     <td><%= HtmlEscaper.text(employee.getDesignation()) %></td>
                     <td><%= employee.getDeptId() > 0 ? employee.getDeptId() + " - " + HtmlEscaper.text(employee.getDepartmentName()) : "Unassigned" %></td>
                     <td><%= employee.getJoiningDate() %></td>
-                    <td><%= employee.getEmploymentStatus() %></td>
+                    <td class="status-cell"><%= employee.getEmploymentStatus() %></td>
                     <td class="actions-cell"><div class="actions">
-                        <% boolean canManage = adminView && employee.getRole() != Role.ADMIN
+                        <% boolean canManage = adminView && (employee.getRole() != Role.ADMIN
+                            || employee.getEmpId() == viewer.getEmpId())
                             || hrView && ((employee.getEmpId() == viewer.getEmpId()
                             && employee.getRole() == Role.HR)
                             || (employee.getRole() == Role.EMPLOYEE

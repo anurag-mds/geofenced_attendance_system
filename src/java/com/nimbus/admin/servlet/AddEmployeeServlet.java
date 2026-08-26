@@ -75,6 +75,9 @@ public class AddEmployeeServlet extends HttpServlet {
             }
             boolean isHr = "hr".equalsIgnoreCase(mode);
             String roleStr = isHr ? Role.HR.name() : Role.EMPLOYEE.name();
+            if (isHr) {
+                designation = "HR Manager";
+            }
 
             // Validate required fields
             if (empCode == null || empCode.trim().isEmpty()

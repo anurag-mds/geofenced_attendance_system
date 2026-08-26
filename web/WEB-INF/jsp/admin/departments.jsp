@@ -33,12 +33,22 @@
         .muted { color: #666; }
         .actions { display: flex; gap: 6px; align-items: center; }
         .actions form { margin: 0; }
-        .action { min-width: 86px; min-height: 32px; padding: 0 9px; border: 1px solid #ccd1d6; border-radius: 5px; background: #fff; color: #24292f; text-decoration: none; font-size: 12px; cursor: pointer; }
+        .action { display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; min-width: 86px; min-height: 32px; padding: 0 9px; border: 1px solid #ccd1d6; border-radius: 5px; background: #fff; color: #24292f; text-decoration: none; font: 12px Arial, sans-serif; line-height: 1; cursor: pointer; }
         .danger { color: #cf222e; }
         .status-active { color: #1f7a3f; font-weight: 600; }
         .status-inactive { color: #6e7781; font-weight: 600; }
         .toast { position: fixed; right: 22px; bottom: 22px; z-index: 2000; padding: 14px 18px; border-radius: 6px; background: #1f883d; color: #fff; box-shadow: 0 6px 20px rgba(27,31,36,.2); }
         .toast.error { background: #cf222e; }
+        .confirm-dialog[hidden] { display: none; }
+        .confirm-dialog { position: fixed; inset: 0; z-index: 2000; display: grid; place-items: center; padding: 20px; }
+        .confirm-backdrop { position: absolute; inset: 0; background: rgba(0, 0, 0, .72); backdrop-filter: blur(4px); }
+        .confirm-panel { position: relative; width: min(440px, 100%); padding: 30px; background: #fff; border: 1px solid #171717; border-radius: 8px; box-shadow: 10px 10px 0 #171717; }
+        .confirm-panel h2 { margin: 0 0 10px; }
+        .confirm-panel p { color: #666; line-height: 1.5; }
+        .confirm-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px; }
+        .confirm-actions button { min-width: 110px; }
+        .confirm-cancel { background: #fff; color: #171717; }
+        .confirm-submit { background: #cf222e; border-color: #cf222e; color: #fff; }
     </style>
 </head>
 <body>
@@ -86,12 +96,12 @@
                         <td class="<%= department.isActive() ? "status-active" : "status-inactive" %>"><%= department.isActive() ? "ACTIVE" : "INACTIVE" %></td>
                         <% if (adminView) { %><td><div class="actions">
                             <a class="action" href="<%= request.getContextPath() %>/DepartmentServlet?edit=<%= department.getDeptId() %>">Edit</a>
-                            <form method="post" action="<%= request.getContextPath() %>/DepartmentServlet" onsubmit="return window.confirm('<%= department.isActive() ? "Deactivate" : "Activate" %> this department?');">
+                            <form class="department-action-form" method="post" action="<%= request.getContextPath() %>/DepartmentServlet">
                                 <input type="hidden" name="csrfToken" value="<%= com.nimbus.admin.util.CsrfToken.getToken(request) %>">
                                 <input type="hidden" name="action" value="toggle"><input type="hidden" name="deptId" value="<%= department.getDeptId() %>"><input type="hidden" name="active" value="<%= !department.isActive() %>">
                                 <button class="action <%= department.isActive() ? "danger" : "" %>" type="submit"><%= department.isActive() ? "Deactivate" : "Activate" %></button>
                             </form>
-                            <form method="post" action="<%= request.getContextPath() %>/DepartmentServlet" onsubmit="return window.confirm('Delete this department? This is allowed only when no employees are assigned.');">
+                            <form class="department-action-form" method="post" action="<%= request.getContextPath() %>/DepartmentServlet">
                                 <input type="hidden" name="csrfToken" value="<%= com.nimbus.admin.util.CsrfToken.getToken(request) %>">
                                 <input type="hidden" name="action" value="delete"><input type="hidden" name="deptId" value="<%= department.getDeptId() %>">
                                 <button class="action danger" type="submit">Delete</button>
@@ -103,10 +113,52 @@
             </table>
         </div>
     </div></main>
+    <div class="confirm-dialog" id="confirmDialog" hidden>
+        <div class="confirm-backdrop" data-close-confirm></div>
+        <section class="confirm-panel" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+            <h2 id="confirmTitle">Confirm department action</h2>
+            <p id="confirmMessage"></p>
+            <div class="confirm-actions">
+                <button class="confirm-cancel" type="button" data-close-confirm>Cancel</button>
+                <button class="confirm-submit" type="button" id="confirmSubmit">Confirm</button>
+            </div>
+        </section>
+    </div>
     <% String success = request.getParameter("success"); %>
     <% if (success != null || error != null && !"hrRequired".equals(error)) { %>
         <div class="toast <%= error != null ? "error" : "" %>"><%= error != null ? "Department operation failed." : "Department updated successfully." %></div>
         <script>setTimeout(function () { document.querySelector('.toast').remove(); }, 4500);</script>
     <% } %>
+    <script>
+        (function () {
+            const dialog = document.getElementById('confirmDialog');
+            const message = document.getElementById('confirmMessage');
+            const submit = document.getElementById('confirmSubmit');
+            let pendingForm;
+            document.querySelectorAll('.department-action-form').forEach(function (form) {
+                form.addEventListener('submit', function (event) {
+                    event.preventDefault();
+                    pendingForm = form;
+                    const action = form.querySelector('input[name="action"]').value;
+                    const isDelete = action === 'delete';
+                    message.textContent = isDelete
+                        ? 'Delete this department? This is allowed only when no employees are assigned.'
+                        : (form.querySelector('input[name="active"]').value === 'true'
+                            ? 'Activate this department?' : 'Deactivate this department?');
+                    submit.textContent = isDelete ? 'Delete' : 'Confirm';
+                    submit.classList.toggle('confirm-submit', isDelete);
+                    dialog.hidden = false;
+                    submit.focus();
+                });
+            });
+            function closeDialog() { dialog.hidden = true; pendingForm = null; }
+            document.querySelectorAll('[data-close-confirm]').forEach(function (element) {
+                element.addEventListener('click', closeDialog);
+            });
+            submit.addEventListener('click', function () {
+                if (pendingForm) pendingForm.submit();
+            });
+        }());
+    </script>
 </body>
 </html>

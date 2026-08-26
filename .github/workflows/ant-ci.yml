@@ -51,3 +51,12 @@ jobs:
           grep -Rqs '@WebServlet("/AdminLeaveOverviewServlet")' src/java
           ! grep -Rqs 'AdminLeaveOverviewServlet' web/WEB-INF/jsp/leave/leave-overview.jsp || \
             grep -Rqs '@WebServlet("/AdminLeaveOverviewServlet")' src/java
+
+      - name: Smoke test deployed web app
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp dist/EmployeeAttendance.war "$RUNNER_TEMP/tomcat/webapps/"
+          "$RUNNER_TEMP/tomcat/bin/catalina.sh" start
+          curl --fail --retry 12 --retry-delay 2 \
+            http://127.0.0.1:8080/EmployeeAttendance/

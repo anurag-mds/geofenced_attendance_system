@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <web-app xmlns="https://jakarta.ee/xml/ns/jakartaee" version="6.0">
-    <session-config><session-timeout>5</session-timeout></session-config>
+    <session-config><session-timeout>30</session-timeout></session-config>
     <error-page><error-code>400</error-code><location>/WEB-INF/jsp/common/error.jsp</location></error-page>
     <error-page><error-code>401</error-code><location>/WEB-INF/jsp/common/error.jsp</location></error-page>
     <error-page><error-code>403</error-code><location>/WEB-INF/jsp/common/error.jsp</location></error-page>

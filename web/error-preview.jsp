@@ -5,25 +5,32 @@
         statusCode = Integer.parseInt(request.getParameter("status"));
     } catch (Exception ignored) {
     }
-    if (statusCode != 403 && statusCode != 404 && statusCode != 500) { statusCode = 500; }
-    String title = statusCode == 403 ? "Access denied" : statusCode == 404 ? "Page not found" : "A quiet malfunction";
-    String detail = statusCode == 403 ? "This area is reserved for another role." : statusCode == 404 ? "The page you are looking for moved, vanished, or never existed." : "The system hit an unexpected pause. Your data remains safe.";
+    if (statusCode != 403 && statusCode != 404 && statusCode != 500 && statusCode != 503) { statusCode = 500; }
+    String title = statusCode == 403 ? "Access denied" : statusCode == 404 ? "Page not found" : statusCode == 503 ? "A short pause" : "A quiet malfunction";
+    String detail = statusCode == 403 ? "This area is reserved for another role." : statusCode == 404 ? "The page you are looking for moved, vanished, or never existed." : statusCode == 503 ? "The service is taking a brief pause. Please try again in a moment." : "The system hit an unexpected pause. Your data remains safe.";
+        if (statusCode == 503) {
+            title = "A short pause";
+            detail = "The service is taking a brief pause. Please try again in a moment.";
+        }
 %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>500 | Employee Attendance System</title>
+    <title><%= statusCode %> Preview | Employee Attendance System</title>
     <style>
         :root { color-scheme: light; --ink: #111; --paper: #f5f5f2; }
         * { box-sizing: border-box; }
         body { margin: 0; min-height: 100vh; overflow: hidden; background: var(--paper); color: var(--ink); font-family: Georgia, 'Times New Roman', serif; }
         .error-page { min-height: 100vh; display: grid; grid-template-columns: minmax(180px, 34vw) 1fr; }
-        .error-index { display: flex; align-items: center; justify-content: center; background: var(--ink); color: var(--paper); font: 900 clamp(8rem, 24vw, 25rem)/.8 Arial, sans-serif; letter-spacing: -.1em; overflow: hidden; }
+        .error-index { display: flex; align-items: center; justify-content: center; background: var(--ink); color: var(--paper); font: 900 clamp(8rem, 24vw, 25rem)/.8 Arial, sans-serif; letter-spacing: -.1em; overflow: hidden; position: relative; }
         .error-index span { transform: rotate(-90deg); }
         .error-copy { display: flex; flex-direction: column; justify-content: center; padding: 8vw; position: relative; }
         .error-copy:before { content: ''; position: absolute; width: 180px; height: 180px; top: 11%; right: 9%; border: 1px solid var(--ink); border-radius: 50%; box-shadow: 0 0 0 18px var(--paper), 0 0 0 19px var(--ink), 0 0 0 36px var(--paper), 0 0 0 37px var(--ink); opacity: .25; }
+        .preview-toolbar { position: fixed; top: 24px; left: 50%; z-index: 2; display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; width: min(94vw, 620px); transform: translateX(-50%); }
+        .preview-toolbar a { margin: 0; padding: 9px 12px; border: 1px solid var(--ink); background: var(--paper); color: var(--ink); font: 700 11px Arial, sans-serif; text-decoration: none; }
+        .preview-toolbar a:hover, .preview-toolbar a.active { background: var(--ink); color: var(--paper); }
         .eyebrow { font: 700 11px/1.2 Arial, sans-serif; letter-spacing: .2em; }
         h1 { max-width: 650px; margin: 22px 0 16px; font-size: clamp(3rem, 7vw, 7rem); line-height: .9; letter-spacing: -.06em; }
         .detail { max-width: 480px; margin: 0 0 34px; font: 16px/1.6 Arial, sans-serif; color: #4d4d49; }
@@ -33,8 +40,14 @@
     </style>
 </head>
 <body>
+    <nav class="preview-toolbar" aria-label="Error page previews">
+        <a class="<%= statusCode == 403 ? "active" : "" %>" href="<%= request.getContextPath() %>/error-preview.jsp?status=403">403 Access Denied</a>
+        <a class="<%= statusCode == 404 ? "active" : "" %>" href="<%= request.getContextPath() %>/error-preview.jsp?status=404">404 Not Found</a>
+        <a class="<%= statusCode == 500 ? "active" : "" %>" href="<%= request.getContextPath() %>/error-preview.jsp?status=500">500 Server Error</a>
+        <a class="<%= statusCode == 503 ? "active" : "" %>" href="<%= request.getContextPath() %>/error-preview.jsp?status=503">503 Unavailable</a>
+    </nav>
     <main class="error-page">
-        <div class="error-index"><span><%= statusCode %></span></div>
+        <div class="error-index" data-status="<%= statusCode %>"><span><%= statusCode %></span></div>
         <section class="error-copy">
             <div class="eyebrow">EMPLOYEE ATTENDANCE SYSTEM / PREVIEW</div>
             <h1><%= title %></h1>

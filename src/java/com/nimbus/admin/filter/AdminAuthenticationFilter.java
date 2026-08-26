@@ -32,9 +32,13 @@ public class AdminAuthenticationFilter implements Filter {
 				&& Boolean.TRUE.equals(httpRequest.getAttribute("logoutTransition"));
 		boolean directProtectedPage = httpRequest.getDispatcherType() == DispatcherType.REQUEST
 				&& "/session-expired.jsp".equals(path);
+		if (httpRequest.getDispatcherType() == DispatcherType.REQUEST && !knownRoute(httpRequest, path)) {
+			chain.doFilter(request, response);
+			return;
+		}
 		if (directProtectedPage && !logoutTransition) {
-			httpResponse.sendRedirect(httpRequest.getContextPath()
-					+ "/index.html?error=not_authenticated");
+			httpResponse.sendError(HttpServletResponse.SC_FORBIDDEN,
+					"This page is only available as part of an application session.");
 			return;
 		}
 
@@ -58,8 +62,8 @@ public class AdminAuthenticationFilter implements Filter {
 		if (hasAuthenticatedMarker(httpRequest)) {
 			httpRequest.getRequestDispatcher("/session-expired.jsp").forward(request, response);
 		} else {
-			httpResponse.sendRedirect(httpRequest.getContextPath()
-					+ "/index.html?error=not_authenticated");
+			httpResponse.sendError(HttpServletResponse.SC_FORBIDDEN,
+					"Authentication is required to access this page.");
 		}
 	}
 
@@ -71,6 +75,13 @@ public class AdminAuthenticationFilter implements Filter {
 					&& "1".equals(cookie.getValue())) return true;
 		}
 		return false;
+	}
+
+	private boolean knownRoute(HttpServletRequest request, String path) throws IOException {
+		if (request.getServletContext().getResource(path) != null) return true;
+		return request.getServletContext().getServletRegistrations().values().stream()
+				.anyMatch(registration -> registration.getMappings().stream().anyMatch(mapping ->
+					mapping.equals(path) || (mapping.endsWith("/*") && path.startsWith(mapping.substring(0, mapping.length() - 2)))));
 	}
 
 	private boolean isPublicPath(String path) {

@@ -96,7 +96,10 @@ const categories = [
   ['AUTH-05','Inactive account','Try an account marked INACTIVE.','Login is rejected with an inactive-account message.'],
   ['AUTH-06','Session expiry','Wait for expiry or clear the session cookie, then open a protected URL.','User reaches the session-expired/login flow, not a broken page.'],
   ['AUTH-07','Role isolation','Open admin, HR, and employee URLs while logged in as the wrong role.','The app returns a clear 403/error page and never redirects to an unrelated dashboard.'],
-  ['AUTH-08','Logout','Use the navbar logout action, then press Back and open a protected URL.','Logout completes and protected content is not available from browser cache.'] ]},
+  ['AUTH-08','Logout','Use the navbar logout action, then press Back and open a protected URL.','Logout completes and protected content is not available from browser cache.'],
+  ['AUTH-09','Shared tabs','Log in in one tab, open the same application link in a second tab, then log out in one tab.','Tabs share the expected session; after logout, protected requests in both tabs are denied.'],
+  ['AUTH-10','Logged-out 403','Use a private window or clear cookies, then open an admin, HR, or employee URL directly.','A 403 Access Denied page appears instead of index.html or an unrelated dashboard.'],
+  ['AUTH-11','Direct session-page access','Open session-expired.jsp directly while logged out, then trigger a real timeout.','Direct access is denied; only a real expired session shows the session-expired screen.'] ]},
  { name:'Admin management', description:'Admin owns employee, HR, and department administration.', tests:[
   ['ADM-01','Add employee','Create a valid employee with a department.','Success toast appears and the employee appears in the list.'],
   ['ADM-02','Add HR','Create a valid HR account.','Success toast appears and the HR account appears in the list.'],
@@ -133,6 +136,15 @@ const categories = [
   ['CHAT-06','Clear chat','Clear a direct and a group conversation.','Built-in app modal appears, cancel preserves messages, confirm removes only the selected conversation.'],
   ['CHAT-07','Notifications','Open, mark read, clear one, and clear all notifications.','Each action returns to Notifications and only authorized records change.'],
   ['CHAT-08','Notification routing','Click notifications for leave, WFH, chat, and account events.','Each link opens the correct target page for the logged-in role.'] ]},
+ { name:'Errors and test reporting', description:'Verify recovery pages, local audit data, evidence handling, and report output.', tests:[
+  ['REP-01','Error-page preview','Open error-preview.jsp with status values 403, 404, and 500.','The intended preview page renders each status and remains publicly reachable.'],
+  ['REP-02','Error-page animation','Trigger 403, 404, and 500 responses and open logout success.','Each page has a smooth animation, remains readable, and respects reduced-motion preferences.'],
+  ['REP-03','Unauthenticated message','Open a protected URL while logged out.','The 403 page clearly explains that authentication is required.'],
+  ['REP-04','Audit persistence','Mark checks passed/failed, add notes, close/reopen the audit page, and refresh.','Statuses and notes remain available in the same browser.'],
+  ['REP-05','Screenshot evidence','Mark a check failed and attach an image.','The image previews locally and remains attached after refresh.'],
+  ['REP-06','PDF report','Set a mix of passed, failed, blocked, and pending checks, then export PDF.','The print report contains metadata, accurate counts, every category, statuses, and failure evidence.'],
+  ['REP-07','Failure export','Create failed and blocked checks, then export the failed report.','The JSON contains only failed/blocked checks, notes, screenshots, and accurate summary counts.'],
+  ['REP-08','Reset audit','Use Reset audit, cancel once, then confirm.','Cancel preserves data; confirmation removes all local statuses, notes, and evidence.'] ]},
  { name:'Security and resilience', description:'Try direct requests and failure conditions, not only the happy path.', tests:[
   ['SEC-01','CSRF protection','Submit a POST after removing or changing csrfToken.','Request is rejected with 403 and no data changes.'],
   ['SEC-02','ID tampering','Change employee, leave, WFH, message, and notification IDs in URLs/forms.','Only permitted records are accessible or changed.'],

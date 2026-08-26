@@ -93,9 +93,13 @@ public class EditEmployeeServlet extends HttpServlet {
             String email = request.getParameter("email");
             String designation = request.getParameter("designation");
             String roleValue = request.getParameter("role");
+                boolean editingHr = employee.getRole() == Role.HR;
+                boolean editingOwnAdmin = viewer.getRole() == Role.ADMIN
+                    && employee.getEmpId() == viewer.getEmpId();
             if (email == null || email.isBlank() || email.length() > 100
                     || designation == null || designation.isBlank() || designation.length() > 50
-                    || !Role.HR.name().equals(roleValue) && !Role.EMPLOYEE.name().equals(roleValue)) {
+                    || !Role.HR.name().equals(roleValue) && !Role.EMPLOYEE.name().equals(roleValue)
+                    && !(editingOwnAdmin && Role.ADMIN.name().equals(roleValue))) {
                 request.setAttribute("error", "Enter valid name, email, designation, and an Employee or HR role.");
                 returnToEdit(request, response, employee);
                 return;
@@ -112,10 +116,11 @@ public class EditEmployeeServlet extends HttpServlet {
                 employee.setPassword(password);
             }
             
-                employee.setRole(viewer.getRole() == Role.HR
+                    employee.setRole(editingOwnAdmin ? Role.ADMIN : viewer.getRole() == Role.HR
                     ? (employee.getEmpId() == viewer.getEmpId() ? Role.HR : Role.EMPLOYEE)
                     : Role.valueOf(roleValue));
-            employee.setDesignation(designation.trim());
+                employee.setDesignation(editingHr ? "HR Manager"
+                    : editingOwnAdmin ? employee.getDesignation() : designation.trim());
 
             if (employeeDAO.emailExists(employee.getEmail(), employee.getEmpId())) {
                 request.setAttribute("error", "Email address already exists");
@@ -130,7 +135,7 @@ public class EditEmployeeServlet extends HttpServlet {
                 returnToEdit(request, response, employee);
                 return;
             }
-                    employee.setDeptId(viewer.getRole() == Role.HR ? employee.getDeptId()
+                        employee.setDeptId(viewer.getRole() == Role.HR || editingOwnAdmin ? employee.getDeptId()
                     : (deptIdStr != null && !deptIdStr.isEmpty() ? Integer.parseInt(deptIdStr) : 0));
             if (employee.getDeptId() > 0 && departmentDAO.getDepartmentById(employee.getDeptId()) == null) {
                 request.setAttribute("error", "Select a valid department.");
@@ -139,15 +144,14 @@ public class EditEmployeeServlet extends HttpServlet {
             }
             
             employee.setJoiningDate(LocalDate.parse(request.getParameter("joiningDate")));
-            employee.setEmploymentStatus(EmploymentStatus.valueOf(request.getParameter("employmentStatus")));
+                employee.setEmploymentStatus(editingOwnAdmin ? employee.getEmploymentStatus()
+                    : EmploymentStatus.valueOf(request.getParameter("employmentStatus")));
 
             if (employeeDAO.updateEmployee(employee)) {
                 request.getSession().setAttribute("employee", employee.getEmpId() == viewer.getEmpId()
                         ? employee : viewer);
                 LOGGER.info("Employee updated: " + employee.getEmpCode());
-                response.sendRedirect(request.getContextPath()
-                    + (viewer.getRole() == Role.HR ? "/SearchEmployeeServlet" : "/adminDashboard.jsp")
-                    + "?success=updated");
+                response.sendRedirect(employeeListRedirect(viewer) + "?success=updated");
             } else {
                 request.setAttribute("error", "Failed to update employee");
                 request.setAttribute("employee", employee);
@@ -177,8 +181,9 @@ public class EditEmployeeServlet extends HttpServlet {
     }
 
     private boolean canManage(Employee viewer, Employee target) {
-        return target != null && target.getRole() != Role.ADMIN
-                && (viewer.getRole() == Role.ADMIN
+        return target != null && (target.getRole() != Role.ADMIN
+            || viewer.getRole() == Role.ADMIN && target.getEmpId() == viewer.getEmpId())
+            && (viewer.getRole() == Role.ADMIN
                 || (viewer.getRole() == Role.HR
                 && ((target.getEmpId() == viewer.getEmpId() && target.getRole() == Role.HR)
                 || (target.getRole() == Role.EMPLOYEE

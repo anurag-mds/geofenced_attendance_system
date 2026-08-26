@@ -53,7 +53,7 @@ public class LoginServlet extends HttpServlet {
             }
             HttpSession session = request.getSession(true);
             session.setAttribute("employee", employee);
-            session.setMaxInactiveInterval(5 * 60); // 5 minutes of inactivity
+            session.setMaxInactiveInterval(30 * 60); // 30 minutes of inactivity
             Cookie authMarker = new Cookie("ATTENDANCE_AUTHENTICATED", "1");
             authMarker.setHttpOnly(true);
             authMarker.setPath(request.getContextPath().isEmpty() ? "/" : request.getContextPath());

@@ -44,7 +44,7 @@
                 <label>Full name<input name="fullName" required maxlength="100"></label>
                 <label>Email<input type="email" name="email" required maxlength="100" pattern="[A-Za-z0-9._%+-]+@nimbustech\.com" title="Use your @nimbustech.com company email."></label>
                 <label>Password<input type="password" name="password" required minlength="8" maxlength="50" pattern="(?=.*[A-Za-z])(?=.*[0-9])[A-Za-z0-9]{8,50}" title="Use 8-50 letters and numbers, including at least one of each." autocomplete="new-password"></label>
-                <label>Designation<input name="designation" required maxlength="50"></label>
+                <label>Designation<input name="designation" value="<%= isHr ? "HR Manager" : "" %>" <%= isHr ? "readonly" : "" %> required maxlength="50"></label>
                 <label class="<%= isHr ? "department-field hidden" : "department-field" %>" id="departmentField">Department<select name="deptId" id="deptId" <%= isHr ? "disabled" : "required" %>><option value="">Select department</option><% if (departments != null) { for (Department department : departments) { %><option value="<%= department.getDeptId() %>"><%= department.getDeptName() %></option><% }} %></select></label>
                 <label>Joining date<input type="date" name="joiningDate" required></label>
             </div>
