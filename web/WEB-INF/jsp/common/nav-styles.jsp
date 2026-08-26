@@ -121,6 +121,44 @@
         font-size: 14px;
     }
 
+    .app-header-notifications {
+        position: relative;
+        width: 36px;
+        height: 36px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--app-header-text);
+        border-radius: 6px;
+        text-decoration: none;
+        font-size: 17px;
+        transition: background-color 0.2s ease;
+    }
+
+    .app-header-notifications:hover {
+        background: rgba(255, 255, 255, 0.09);
+    }
+
+    .app-notification-badge {
+        position: absolute;
+        top: 1px;
+        right: 0;
+        min-width: 16px;
+        height: 16px;
+        padding: 0 4px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        box-sizing: border-box;
+        border: 2px solid var(--app-header-bg);
+        border-radius: 999px;
+        background: #dc2626;
+        color: #fff;
+        font-size: 9px;
+        font-weight: 700;
+        line-height: 1;
+    }
+
     .user-name {
         color: var(--app-header-text);
         font-weight: 600;

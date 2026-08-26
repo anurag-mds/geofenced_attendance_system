@@ -66,6 +66,15 @@
                 <%= navEmployee.getFullName() %>
             </span>
 
+            <a href="<%= ctx %>/NotificationServlet"
+               class="app-header-notifications"
+               aria-label="Notifications<%= unreadNotifications > 0 ? " (" + unreadNotifications + " unread)" : "" %>">
+                <i class="fa-regular fa-bell" aria-hidden="true"></i>
+                <% if (unreadNotifications > 0) { %>
+                    <span class="app-notification-badge"><%= unreadNotifications > 99 ? "99+" : unreadNotifications %></span>
+                <% } %>
+            </a>
+
                 <a href="<%= ctx %>/LogoutServlet"
                     class="app-logout-button"
                     data-logout-url="<%= ctx %>/LogoutServlet"
