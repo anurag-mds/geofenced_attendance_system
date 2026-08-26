@@ -22,7 +22,7 @@
     <%@ include file="/WEB-INF/jsp/common/nav-styles.jsp" %>
     <style>
         * { box-sizing: border-box; }
-        body { margin: 0; font-family: Arial, sans-serif; background: #f2f4f7; color: #24292f; }
+        body { margin: 0; font-family: var(--app-font, Georgia, 'Times New Roman', serif); background: #f2f4f7; color: #24292f; }
         .page-content { padding: 28px; }
         .contact-shell { max-width: 1120px; height: calc(100vh - 126px); min-height: 540px; margin: auto; display: grid; grid-template-columns: 270px 1fr; background: #fff; border: 1px solid #d0d7de; border-radius: 8px; overflow: hidden; }
         .people { border-right: 1px solid #d0d7de; background: #f6f8fa; overflow-y: auto; }

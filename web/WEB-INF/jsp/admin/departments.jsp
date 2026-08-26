@@ -19,7 +19,7 @@
     <title>Departments</title>
     <%@ include file="/WEB-INF/jsp/common/nav-styles.jsp" %>
     <style>
-        body { font-family: Arial, sans-serif; background: #f2f4f7; color: #222; }
+        body { font-family: var(--app-font, Georgia, 'Times New Roman', serif); background: #f2f4f7; color: #222; }
         .page-content { padding: 30px 20px; }
         .container { max-width: 1000px; margin: auto; }
         .card { background: #fff; padding: 24px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 3px 10px rgba(0,0,0,.08); }

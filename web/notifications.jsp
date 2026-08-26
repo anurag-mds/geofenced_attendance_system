@@ -49,7 +49,7 @@
 
         body {
             margin: 0;
-            font-family: Arial, sans-serif;
+            font-family: var(--app-font, Georgia, 'Times New Roman', serif);
             background: #f2f4f7;
             color: #222;
         }

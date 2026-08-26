@@ -44,8 +44,20 @@
         }
 
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f2f4f7;
+            font-family: var(--app-font);
+            background-color: var(--app-bg);
+            color: var(--app-text);
+        }
+
+        .welcome h1,
+        .summary-card .card-number,
+        .summary-card .card-title,
+        .leave-section h2,
+        .leave-section .section-description,
+        .leave-balance-item .value,
+        .leave-request-item .title,
+        .leave-button {
+            font-family: var(--app-font);
         }
 
         /* Main dashboard */

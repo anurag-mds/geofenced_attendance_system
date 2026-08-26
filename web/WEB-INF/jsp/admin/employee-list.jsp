@@ -23,7 +23,7 @@
     <title>Employees</title>
     <%@ include file="/WEB-INF/jsp/common/nav-styles.jsp" %>
     <style>
-        body { font-family: Arial, sans-serif; background: #eef1f5; color: #20242a; }
+        body { font-family: var(--app-font, Georgia, 'Times New Roman', serif); background: #eef1f5; color: #20242a; }
         .page-content { padding: 38px 28px 56px; }
         .container { max-width: 1440px; margin: auto; }
         .card { background: #fff; padding: 32px; border: 1px solid #e1e5ea; border-radius: 12px; box-shadow: 0 10px 30px rgba(31,35,40,.07); }

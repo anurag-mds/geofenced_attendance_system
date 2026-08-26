@@ -78,9 +78,18 @@
 
 
         body {
-            font-family: Arial, sans-serif;
-            background: #f2f4f7;
-            color: #222;
+            font-family: var(--app-font);
+            background: var(--app-bg);
+            color: var(--app-text);
+        }
+
+        .welcome h1,
+        .card h2,
+        .request-count,
+        .btn,
+        .stat-number,
+        .stat-title {
+            font-family: var(--app-font);
         }
 
 
@@ -217,35 +226,29 @@
 
         .links {
             display: flex;
-
             flex-wrap: nowrap;
-
             align-items: center;
-
-            gap: 10px;
-
+            gap: 12px;
+            margin-top: 18px;
             overflow-x: auto;
         }
 
 
         .btn {
-            display: inline-block;
-
-            padding: 11px 16px;
-
-            border-radius: 7px;
-
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 170px;
+            padding: 12px 18px;
+            border-radius: 8px;
             text-decoration: none;
-
             background: #222;
-
             color: white;
-
             font-size: 14px;
-
+            font-weight: 600;
             white-space: nowrap;
-
-            flex: 0 0 auto;
+            flex: 1 1 0;
+            text-align: center;
         }
 
 

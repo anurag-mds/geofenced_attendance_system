@@ -5,9 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nimbus | A quieter way to arrive</title>
     <style>
-        :root { --ink: #101010; --paper: #ffffff; --chalk: #ffffff; --line: rgba(16,16,16,.22); --error: #c1121f; --error-soft: #fff1f2; }
+        :root {
+            --app-font: Georgia, 'Times New Roman', serif;
+            --ink: #101010;
+            --paper: #ffffff;
+            --chalk: #ffffff;
+            --line: rgba(16,16,16,.22);
+            --error: #c1121f;
+            --error-soft: #fff1f2;
+        }
         * { box-sizing: border-box; }
-        body { margin: 0; min-height: 100vh; overflow: hidden; color: var(--ink); background: var(--paper); font-family: Georgia, 'Times New Roman', serif; }
+        body { margin: 0; min-height: 100vh; overflow: hidden; color: var(--ink); background: var(--paper); font-family: var(--app-font); }
         .stage { min-height: 100vh; position: relative; isolation: isolate; display: grid; place-items: center; padding: 7vw; overflow: hidden; background: #ffffff; }
         .stage::before, .stage::after { content: ''; position: absolute; z-index: -1; border: 1px solid var(--line); border-radius: 50%; animation: drift 16s ease-in-out infinite alternate; }
         .stage::before { width: 66vw; height: 66vw; right: -22vw; top: -18vw; }

@@ -32,7 +32,7 @@
     }
 
     body {
-        font-family: Arial, sans-serif;
+        font-family: var(--app-font, Georgia, 'Times New Roman', serif);
         background: #f5f7fa;
         color: #222;
     }

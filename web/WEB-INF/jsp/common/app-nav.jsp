@@ -45,7 +45,9 @@
                 class="app-menu-button"
                 onclick="toggleAppSidebar()"
                 aria-label="Open navigation menu">
-            &#9776;
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M3 6.75h18M3 12h18M3 17.25h18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            </svg>
         </button>
 
         <div class="app-brand-block">
@@ -87,85 +89,114 @@
 
     <% if (navRole == Role.EMPLOYEE) { %>
 
-        <!-- Employee Dashboard -->
         <a href="<%= ctx %>/EmployeeDashboardServlet">
-            &#127968; Dashboard
+            <span class="nav-icon"><i class="fa-solid fa-house"></i></span>
+            <span>Dashboard</span>
         </a>
 
-        <!-- Attendance -->
         <a href="#">
-            &#128197; Attendance
+            <span class="nav-icon"><i class="fa-regular fa-calendar-days"></i></span>
+            <span>Attendance</span>
         </a>
 
-        <!-- Apply Leave -->
-        <a href="<%= ctx %>/ApplyLeaveServlet">
-            &#127958; Apply Leave
+        <a href="<%= ctx %>/EmployeeLeaveMenuServlet">
+            <span class="nav-icon"><i class="fa-regular fa-file-lines"></i></span>
+            <span>Leave</span>
         </a>
 
-        <!-- Leave History -->
-        <a href="<%= ctx %>/LeaveHistoryServlet">
-            &#128203; Leave History
-        </a>
-
-        <!-- Work From Home -->
         <a href="<%= ctx %>/ApplyRemoteWorkServlet">
-            &#127968; Apply for Work From Home
+            <span class="nav-icon"><i class="fa-solid fa-house-laptop"></i></span>
+            <span>Work From Home</span>
         </a>
 
-        <!-- Notifications -->
         <a href="<%= ctx %>/NotificationServlet">
-            &#128276; Notifications<% if (unreadNotifications > 0) { %><span class="notification-dot"></span><% } %>
+            <span class="nav-icon"><i class="fa-regular fa-bell"></i></span>
+            <span>Notifications</span>
+            <% if (unreadNotifications > 0) { %><span class="notification-dot"></span><% } %>
         </a>
 
-        <!-- Profile -->
         <a href="<%= ctx %>/ProfileServlet">
-            &#128100; My Profile
+            <span class="nav-icon"><i class="fa-regular fa-user"></i></span>
+            <span>My Profile</span>
         </a>
 
 
     <% } else if (navRole == Role.HR) { %>
 
-        <!-- HR Dashboard -->
         <a href="<%= ctx %>/HrDashboardServlet">
-            &#127968; HR Dashboard
+            <span class="nav-icon"><i class="fa-solid fa-chart-column"></i></span>
+            <span>HR Dashboard</span>
         </a>
 
         <a href="<%= ctx %>/HrLeaveRequestsServlet">
-            &#128203; Leave Requests
+            <span class="nav-icon"><i class="fa-regular fa-clipboard"></i></span>
+            <span>Leave Requests</span>
         </a>
 
         <a href="<%= ctx %>/HrRemoteWorkRequestsServlet">
-            &#127968; WFH Requests
+            <span class="nav-icon"><i class="fa-solid fa-laptop-house"></i></span>
+            <span>WFH Requests</span>
         </a>
 
-        <a href="<%= ctx %>/SearchEmployeeServlet">&#128100; My Employees</a>
-        <a href="<%= ctx %>/ContactServlet?role=ADMIN">&#128222; Contact Admin</a>
-        <a href="<%= ctx %>/ProfileServlet">&#128100; Profile</a>
-        <a href="<%= ctx %>/NotificationServlet">&#128276; Notifications<% if (unreadNotifications > 0) { %><span class="notification-dot"></span><% } %></a>
+        <a href="<%= ctx %>/SearchEmployeeServlet">
+            <span class="nav-icon"><i class="fa-solid fa-users"></i></span>
+            <span>My Employees</span>
+        </a>
+
+        <a href="<%= ctx %>/ContactServlet?role=ADMIN">
+            <span class="nav-icon"><i class="fa-solid fa-phone"></i></span>
+            <span>Contact Admin</span>
+        </a>
+
+        <a href="<%= ctx %>/ProfileServlet">
+            <span class="nav-icon"><i class="fa-regular fa-user"></i></span>
+            <span>Profile</span>
+        </a>
+
+        <a href="<%= ctx %>/NotificationServlet">
+            <span class="nav-icon"><i class="fa-regular fa-bell"></i></span>
+            <span>Notifications</span>
+            <% if (unreadNotifications > 0) { %><span class="notification-dot"></span><% } %>
+        </a>
 
 
     <% } else if (navRole == Role.ADMIN) { %>
 
-        <!-- Admin Dashboard -->
         <a href="<%= ctx %>/adminDashboard.jsp">
-            &#127968; Admin Dashboard
+            <span class="nav-icon"><i class="fa-solid fa-gauge-high"></i></span>
+            <span>Admin Dashboard</span>
         </a>
 
         <a href="<%= ctx %>/SearchEmployeeServlet">
-            &#128100; Manage Employees
+            <span class="nav-icon"><i class="fa-solid fa-user-tie"></i></span>
+            <span>Manage Employees</span>
         </a>
 
         <a href="<%= ctx %>/SearchEmployeeServlet?role=HR">
-            &#128100; Manage HR
+            <span class="nav-icon"><i class="fa-solid fa-user-shield"></i></span>
+            <span>Manage HR</span>
         </a>
 
         <a href="<%= ctx %>/DepartmentServlet">
-            &#127979; Manage Departments
+            <span class="nav-icon"><i class="fa-solid fa-building"></i></span>
+            <span>Manage Departments</span>
         </a>
 
-        <a href="<%= ctx %>/ContactServlet?role=HR">&#128222; Contact HR</a>
-        <a href="<%= ctx %>/ProfileServlet">&#128100; Profile</a>
-        <a href="<%= ctx %>/NotificationServlet">&#128276; Notifications<% if (unreadNotifications > 0) { %><span class="notification-dot"></span><% } %></a>
+        <a href="<%= ctx %>/ContactServlet?role=HR">
+            <span class="nav-icon"><i class="fa-solid fa-phone"></i></span>
+            <span>Contact HR</span>
+        </a>
+
+        <a href="<%= ctx %>/ProfileServlet">
+            <span class="nav-icon"><i class="fa-regular fa-user"></i></span>
+            <span>Profile</span>
+        </a>
+
+        <a href="<%= ctx %>/NotificationServlet">
+            <span class="nav-icon"><i class="fa-regular fa-bell"></i></span>
+            <span>Notifications</span>
+            <% if (unreadNotifications > 0) { %><span class="notification-dot"></span><% } %>
+        </a>
 
     <% } %>
 

@@ -214,7 +214,7 @@ public class ApplyRemoteWorkServlet extends HttpServlet {
 
                 response.sendRedirect(
                         request.getContextPath()
-                        + "/ApplyRemoteWorkServlet?success=1"
+                        + "/RemoteWorkHistoryServlet?success=1"
                 );
 
             } else {

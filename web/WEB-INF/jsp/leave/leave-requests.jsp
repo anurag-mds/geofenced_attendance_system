@@ -30,7 +30,7 @@
     <title>Leave Requests</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: Arial, sans-serif; background: #f2f4f7; color: #222; }
+        body { font-family: var(--app-font, Georgia, 'Times New Roman', serif); background: #f2f4f7; color: #222; }
         .container { max-width: 1100px; margin: 30px auto; padding: 0 20px; }
         .card {
             background: #fff; border-radius: 10px; padding: 28px;
