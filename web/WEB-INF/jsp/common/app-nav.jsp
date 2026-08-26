@@ -148,15 +148,15 @@
             <span>Contact Admin</span>
         </a>
 
-        <a href="<%= ctx %>/ProfileServlet">
-            <span class="nav-icon"><i class="fa-regular fa-user"></i></span>
-            <span>Profile</span>
-        </a>
-
         <a href="<%= ctx %>/NotificationServlet">
             <span class="nav-icon"><i class="fa-regular fa-bell"></i></span>
             <span>Notifications</span>
             <% if (unreadNotifications > 0) { %><span class="notification-dot"></span><% } %>
+        </a>
+
+        <a href="<%= ctx %>/ProfileServlet">
+            <span class="nav-icon"><i class="fa-regular fa-user"></i></span>
+            <span>Profile</span>
         </a>
 
 
@@ -187,15 +187,15 @@
             <span>Contact HR</span>
         </a>
 
-        <a href="<%= ctx %>/ProfileServlet">
-            <span class="nav-icon"><i class="fa-regular fa-user"></i></span>
-            <span>Profile</span>
-        </a>
-
         <a href="<%= ctx %>/NotificationServlet">
             <span class="nav-icon"><i class="fa-regular fa-bell"></i></span>
             <span>Notifications</span>
             <% if (unreadNotifications > 0) { %><span class="notification-dot"></span><% } %>
+        </a>
+
+        <a href="<%= ctx %>/ProfileServlet">
+            <span class="nav-icon"><i class="fa-regular fa-user"></i></span>
+            <span>Profile</span>
         </a>
 
     <% } %>
